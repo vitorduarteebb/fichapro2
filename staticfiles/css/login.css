@@ -1,0 +1,53 @@
+/* Fundo e texto */
+body {
+    background-color: #0d1117; /* Fundo escuro */
+    color: #c9d1d9; /* Texto claro */
+}
+
+/* Card */
+.card {
+    background-color: #161b22; /* Fundo do card */
+    color: #c9d1d9; /* Texto do card */
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Header do card */
+.card-header {
+    background-color: #21262d; /* Fundo do header */
+    color: #ffffff; /* Texto do header */
+    border-bottom: 1px solid #30363d;
+}
+
+/* Inputs */
+.form-control {
+    background-color: #0d1117; /* Fundo dos inputs */
+    border: 1px solid #30363d; /* Borda dos inputs */
+    color: #c9d1d9; /* Texto dos inputs */
+}
+
+.form-control:focus {
+    background-color: #0d1117;
+    color: #ffffff;
+    border-color: #58a6ff; /* Foco nos inputs */
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+/* Botão primário */
+.btn-primary {
+    background-color: #238636; /* Botão primário */
+    border-color: #238636;
+}
+
+.btn-primary:hover {
+    background-color: #2ea043; /* Cor ao passar o mouse */
+    border-color: #2ea043;
+}
+
+/* Alertas */
+.alert {
+    background-color: #b62324; /* Fundo do alerta */
+    color: #ffffff; /* Texto do alerta */
+    border: none;
+}

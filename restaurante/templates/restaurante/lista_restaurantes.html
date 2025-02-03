@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Restaurantes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Restaurantes Cadastrados</h2>
+  
+  {% if restaurantes %}
+  <div class="table-responsive">
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>CNPJ/CPF</th>
+          <th>E-mail</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for restaurante in restaurantes %}
+        <tr>
+          <td>{{ restaurante.id }}</td>
+          <td>
+            {% if restaurante.tipo_pessoa == 'PJ' %}
+              {{ restaurante.nome_restaurante }}
+            {% else %}
+              {{ restaurante.cpf }}
+            {% endif %}
+          </td>
+          <td>
+            {% if restaurante.tipo_pessoa == 'PJ' %}
+              {{ restaurante.cnpj }}
+            {% else %}
+              {{ restaurante.cpf }}
+            {% endif %}
+          </td>
+          <td>{{ restaurante.email }}</td>
+          <td>
+            <!-- Link para acessar o detalhe/dashboad do restaurante -->
+            <a href="{% url 'restaurante:restaurante_detail' restaurante.id %}" class="btn btn-sm btn-primary">
+              Acessar
+            </a>
+            <!-- Formulário para exclusão do restaurante -->
+            <form method="post" action="{% url 'restaurante:excluir_restaurante' restaurante.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este restaurante?');">
+                Excluir
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted">Nenhum restaurante cadastrado.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - FichaPro{% endblock %}
+
+<!-- Inclui o arquivo CSS do Dashboard -->
+{% block extra_css %}
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <h1 class="mb-5 text-center">Dashboard</h1>
+
+    <!-- Widgets Section -->
+    <section class="dashboard-widgets row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">
+                                <span class="legend-circle bg-success me-2"></span>
+                                Income
+                            </h5>
+                            <p class="card-value">$3,240</p>
+                            <p class="card-subtitle">No additional income</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9.75,15.937c0,.932,1.007,1.688,2.25,1.688s2.25-.756,2.25-1.688S13.243,14.25,12,14.25s-2.25-.756-2.25-1.688,1.007-1.687,2.25-1.687,2.25.755,2.25,1.687"></path>
+                            <rect x="1.5" y="6.75" width="21" height="15" rx="1.5"></rect>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">
+                                <span class="legend-circle bg-danger me-2"></span>
+                                Expense
+                            </h5>
+                            <p class="card-value">$1,500</p>
+                            <p class="card-subtitle">+ $6.50 bank charges fee</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="17.25" cy="17.25" r="6"></circle>
+                            <path d="M17.25 14.25L17.25 13.5"></path>
+                            <path d="M17.25 21L17.25 20.25"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-uppercase">Total</h5>
+                    <p class="card-value">$74,925</p>
+                    <p class="card-subtitle">
+                        <span class="badge bg-success">+12%</span> from $65,934
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-uppercase">Pageviews</h5>
+                    <p class="card-value">123,598</p>
+                    <p class="card-subtitle">
+                        <span class="badge bg-danger">-9.2%</span> from 134,969
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts mt-5">
+        <div class="card shadow border-0">
+            <div class="card-header">
+                <h3 class="m-0">Sales Chart</h3>
+            </div>
+            <div class="card-body">
+                <div id="sales-chart" class="chart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

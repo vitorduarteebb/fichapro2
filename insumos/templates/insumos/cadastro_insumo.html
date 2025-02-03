@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Cadastro de Insumo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Cadastro de Insumo</h2>
+  
+  <!-- Botão para Importar XML -->
+  <div class="mb-4">
+    <a href="{% url 'insumos:import_insumos' restaurante.id %}" class="btn btn-outline-info">
+      <i class="fas fa-file-upload me-1"></i> Importar Insumos via XML
+    </a>
+  </div>
+  
+  <!-- Formulário Manual para Cadastro de Insumo -->
+  <form method="post" action="{% url 'insumos:cadastro_insumo' restaurante.id %}" class="needs-validation" novalidate style="max-width: 400px;">
+    {% csrf_token %}
+    
+    <!-- Campo Nome -->
+    <div class="mb-3">
+      <label for="id_nome" class="form-label">
+        <i class="fas fa-tag me-2"></i>Nome:
+      </label>
+      {{ form.nome|add_class:"form-control form-control-sm" }}
+    </div>
+    
+    <!-- Campo Unidade de Medida -->
+    <div class="mb-3">
+      <label for="id_unidade_medida" class="form-label">
+        <i class="fas fa-balance-scale me-2"></i>Unidade de Medida:
+      </label>
+      {{ form.unidade_medida|add_class:"form-control form-control-sm" }}
+    </div>
+    
+    <!-- Campo Quantidade -->
+    <div class="mb-3">
+      <label for="id_quantidade" class="form-label">
+        <i class="fas fa-sort-numeric-up me-2"></i>Quantidade:
+      </label>
+      {{ form.quantidade|add_class:"form-control form-control-sm" }}
+    </div>
+    
+    <!-- Campo Preço -->
+    <div class="mb-3">
+      <label for="id_preco" class="form-label">
+        <i class="fas fa-dollar-sign me-2"></i>Preço:
+      </label>
+      {{ form.preco|add_class:"form-control form-control-sm" }}
+    </div>
+    
+    <!-- Campo Peso -->
+    <div class="mb-3">
+      <label for="id_peso" class="form-label">
+        <i class="fas fa-weight me-2"></i>Peso:
+      </label>
+      {{ form.peso|add_class:"form-control form-control-sm" }}
+      <small class="form-text text-muted">
+        Se a unidade for "kg" ou "g", o peso será definido automaticamente com base na quantidade.
+      </small>
+    </div>
+    
+    <div class="d-flex align-items-center">
+      <button type="submit" class="btn btn-primary me-2">
+        <i class="fas fa-save me-1"></i> Cadastrar Insumo
+      </button>
+      <a href="{% url 'restaurante:restaurante_detail' restaurante.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

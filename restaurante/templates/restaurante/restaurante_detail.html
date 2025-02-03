@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Restaurante{% endblock %}
+
+{% block content %}
+<style>
+  /* Tema escuro com gradientes e cores de destaque */
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+  .card-dark {
+    background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+    border: 1px solid #444;
+    border-radius: 8px;
+  }
+  .card-dark .card-header {
+    background: linear-gradient(135deg, #2a2a2a, #333);
+    border-bottom: 1px solid #444;
+  }
+  .card-dark .card-header h4,
+  .card-dark .card-header h6 {
+    color: #f1f1f1;
+    font-weight: bold;
+  }
+  .card-dark .card-body, .card-dark ul li {
+    color: #d0d0d0;
+  }
+  .section-title {
+    color: #ff9800;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .btn-custom {
+    background-color: #444;
+    color: #f1f1f1;
+    border: 1px solid #666;
+    border-radius: 4px;
+  }
+  .btn-custom:hover {
+    background-color: #666;
+    color: #fff;
+  }
+  .table-dark-custom {
+    background-color: #1f1f1f;
+    color: #f0f0f0;
+  }
+  .table-dark-custom thead th {
+    background-color: #333;
+    color: #ff9800;
+    border-bottom: 2px solid #555;
+  }
+  .table-dark-custom tbody td {
+    background-color: #1f1f1f;
+    border-top: 1px solid #444;
+    color: #f0f0f0;
+  }
+  .scrollable-table {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .scrollable-table::-webkit-scrollbar {
+    width: 8px;
+  }
+  .scrollable-table::-webkit-scrollbar-track {
+    background: #2a2a2a;
+  }
+  .scrollable-table::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 4px;
+  }
+</style>
+
+<div class="container mt-3">
+  <div class="row">
+    <!-- Coluna Esquerda: Dados do Restaurante e Fator de Correção -->
+    <div class="col-lg-4 mb-3">
+      <div class="card card-dark shadow-sm mb-3">
+        <div class="card-header">
+          <h4 class="mb-0 section-title">
+            {% if restaurante.tipo_pessoa == 'PJ' %}
+              {{ restaurante.nome_restaurante|default:"Restaurante sem nome" }}
+            {% else %}
+              {{ restaurante.cpf|default:"Restaurante PF" }}
+            {% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small mb-3">
+            <li>
+              <strong>CNPJ/CPF:</strong>
+              {% if restaurante.tipo_pessoa == 'PJ' %}
+                {{ restaurante.cnpj|default:"Não cadastrado" }}
+              {% else %}
+                {{ restaurante.cpf|default:"Não cadastrado" }}
+              {% endif %}
+            </li>
+            <li><strong>Email:</strong> {{ restaurante.email|default:"Não cadastrado" }}</li>
+            <li><strong>Telefone:</strong> {{ restaurante.telefone|default:"Não cadastrado" }}</li>
+          </ul>
+          <!-- Formulário Inline para Atualizar o Fator de Correção Financeiro -->
+          <div class="card card-dark mt-3">
+            <div class="card-header">
+              <h6 class="section-title">Fator Correção Financeiro</h6>
+            </div>
+            <div class="card-body">
+              <form method="post" action="">
+                {% csrf_token %}
+                {{ fator_form.fator_correcao_financeiro.label_tag }}
+                {{ fator_form.fator_correcao_financeiro }}
+                <button type="submit" class="btn btn-primary btn-sm">Atualizar</button>
+              </form>
+            </div>
+          </div>
+          <div class="card card-dark mt-3">
+            <div class="card-body p-2">
+              <h6 class="mb-2 section-title">Endereço</h6>
+              <ul class="list-unstyled small mb-0">
+                <li><strong>Logradouro:</strong> {{ restaurante.endereco|default:"Não cadastrado" }}</li>
+                <li><strong>Nº:</strong> {{ restaurante.numero|default:"-" }}</li>
+                <li><strong>Complemento:</strong> {{ restaurante.complemento|default:"-" }}</li>
+                <li><strong>Bairro:</strong> {{ restaurante.bairro|default:"Não cadastrado" }}</li>
+                <li><strong>Cidade/UF:</strong> {{ restaurante.cidade|default:"-" }} / {{ restaurante.estado|default:"-" }}</li>
+                <li><strong>CEP:</strong> {{ restaurante.cep|default:"-" }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Coluna Direita: Insumos, Receitas e Fichas Técnicas -->
+    <div class="col-lg-8 mb-3">
+      <div class="row">
+        <!-- Card de Insumos -->
+        <div class="col-12 mb-3">
+          <div class="card card-dark shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0 section-title">Insumos Cadastrados</h4>
+              <a href="{% url 'insumos:cadastro_insumo' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Insumo">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+            <div class="card-body p-2">
+              <div class="scrollable-table">
+                <table class="table table-hover table-dark-custom mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 60px;">ID</th>
+                      <th>Nome</th>
+                      <th>Unidade</th>
+                      <th>Qtd</th>
+                      <th>Preço</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for insumo in insumos %}
+                    <tr>
+                      <td>{{ insumo.id }}</td>
+                      <td>{{ insumo.nome }}</td>
+                      <td>{{ insumo.unidade_medida }}</td>
+                      <td>{{ insumo.quantidade }}</td>
+                      <td>{{ insumo.preco }}</td>
+                      <td>
+                        <a href="{% url 'insumos:excluir_insumo' insumo.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este insumo?');">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center">Nenhum insumo cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <!-- Card de Receitas -->
+        <div class="col-md-6 mb-3">
+          <div class="card card-dark shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0 section-title">Receitas Cadastradas</h4>
+              <a href="{% url 'receitas:receita_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Receita">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+            <div class="card-body p-2">
+              <div class="scrollable-table">
+                <table class="table table-hover table-dark-custom mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 60px;">ID</th>
+                      <th>Nome do Prato</th>
+                      <th>Porção (g)</th>
+                      <th>Tempo (min)</th>
+                      <th>Preço KG (R$)</th>
+                      <th>Rendimento</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for receita in receitas %}
+                    <tr>
+                      <td>{{ receita.id }}</td>
+                      <td>{{ receita.nome_prato }}</td>
+                      <td>{{ receita.porcao_sugerida }}</td>
+                      <td>{{ receita.tempo_preparo }}</td>
+                      <td>{{ receita.preco_kg|floatformat:2 }}</td>
+                      <td>
+                        {% if receita.rendimento %}
+                          {{ receita.rendimento|floatformat:1 }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{% url 'receitas:excluir_receita' receita.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta receita?');">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="7" class="text-center">Nenhuma receita cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card de Fichas Técnicas -->
+        <div class="col-md-6 mb-3">
+          <div class="card card-dark shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0 section-title">Fichas Técnicas Cadastradas</h4>
+              <a href="{% url 'fichas_tecnicas:ficha_tecnica_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Ficha Técnica">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+            <div class="card-body p-2">
+              <div class="scrollable-table">
+                <table class="table table-hover table-dark-custom mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 60px;">ID</th>
+                      <th>Nome do Prato</th>
+                      <th>Porção (g)</th>
+                      <th>Tempo (min)</th>
+                      <th>Rendimento</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ficha in fichas_tecnicas %}
+                    <tr>
+                      <td>{{ ficha.id }}</td>
+                      <td>{{ ficha.nome_prato }}</td>
+                      <td>{{ ficha.porcao_sugerida }}</td>
+                      <td>{{ ficha.tempo_preparo }}</td>
+                      <td>
+                        {% if ficha.rendimento %}
+                          {{ ficha.rendimento|floatformat:1 }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{% url 'fichas_tecnicas:excluir_ficha_tecnica' ficha.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta ficha técnica?');">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center">Nenhuma ficha técnica cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- Fim da segunda linha -->
+    </div>
+  </div>
+</div>
+{% endblock %}

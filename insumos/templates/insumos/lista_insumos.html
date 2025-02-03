@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Insumos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Lista de Insumos</h2>
+  {% if insumos %}
+    <div class="table-responsive">
+      <table class="table table-dark table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Unidade</th>
+            <th>Quantidade</th>
+            <th>Preço</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for insumo in insumos %}
+            <tr>
+              <td>{{ insumo.id }}</td>
+              <td>{{ insumo.nome }}</td>
+              <td>{{ insumo.unidade_medida }}</td>
+              <td>{{ insumo.quantidade }}</td>
+              <td>{{ insumo.preco }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">Nenhum insumo cadastrado.</p>
+  {% endif %}
+</div>
+{% endblock %}

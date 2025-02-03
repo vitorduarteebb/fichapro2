@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static widget_tweaks %}
+
+{% block title %}Cadastro de Receita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Cadastro de Receita para {{ restaurante.nome_restaurante }}</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- Dados da Receita -->
+    <div class="card mb-3">
+      <div class="card-header bg-primary text-white">
+        Dados da Receita
+      </div>
+      <div class="card-body">
+        {{ form.as_p }}
+      </div>
+    </div>
+    
+    <!-- Insumos Utilizados -->
+    <div class="card mb-3">
+      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <span>Insumos Utilizados</span>
+        <button type="button" class="btn btn-light btn-sm" id="addInsumo" title="Adicionar Insumo">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        {{ formset.management_form }}
+        <div id="formset-container">
+          {% for form in formset %}
+          <div class="row mb-2 formset-item">
+            <div class="col-md-3">
+              {{ form.insumo.label_tag }}
+              {{ form.insumo|add_class:"form-control insumo-select" }}
+            </div>
+            <div class="col-md-2">
+              {{ form.unidade.label_tag }}
+              {{ form.unidade|add_class:"form-control unidade-select" }}
+            </div>
+            <div class="col-md-3">
+              {{ form.quantidade_utilizada.label_tag }}
+              {{ form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
+            </div>
+            <div class="col-md-3">
+              <label>Custo (R$)</label>
+              <input type="text" class="form-control custo-utilizada" readonly>
+            </div>
+            <div class="col-md-1">
+              <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <!-- Template vazio para novos insumos -->
+        <script type="text/template" id="empty-form-template">
+          <div class="row mb-2 formset-item">
+            <div class="col-md-3">
+              {{ formset.empty_form.insumo.label_tag }}
+              {{ formset.empty_form.insumo|add_class:"form-control insumo-select" }}
+            </div>
+            <div class="col-md-2">
+              {{ formset.empty_form.unidade.label_tag }}
+              {{ formset.empty_form.unidade|add_class:"form-control unidade-select" }}
+            </div>
+            <div class="col-md-3">
+              {{ formset.empty_form.quantidade_utilizada.label_tag }}
+              {{ formset.empty_form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
+            </div>
+            <div class="col-md-3">
+              <label>Custo (R$)</label>
+              <input type="text" class="form-control custo-utilizada" readonly>
+            </div>
+            <div class="col-md-1">
+              <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </script>
+      </div>
+    </div>
+    
+    <!-- Totais da Receita -->
+    <div class="card mb-3">
+      <div class="card-header bg-dark text-white">
+        Totais da Receita
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <label>Peso Total (g):</label>
+            <input type="text" id="pesoTotal" class="form-control" readonly>
+          </div>
+          <div class="col-md-3">
+            <label>Custo Total (R$):</label>
+            <input type="text" id="custoTotal" class="form-control" readonly>
+          </div>
+          <div class="col-md-3">
+            <label>Preço do KG (R$):</label>
+            <input type="text" id="precoKG" class="form-control" readonly>
+          </div>
+          <div class="col-md-3">
+            <label>Rendimento (porções):</label>
+            <input type="text" id="rendimento" class="form-control" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button type="submit" class="btn btn-success">Cadastrar Receita</button>
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("DOM fully loaded.");
+  var insumosData = {{ insumos_json|default:"[]"|safe }};
+  console.log("Insumos Data:", insumosData);
+  
+  function getInsumoDataById(id) {
+    for (var i = 0; i < insumosData.length; i++) {
+      if (parseInt(insumosData[i].id) === parseInt(id)) {
+        return insumosData[i];
+      }
+    }
+    console.log("Insumo not found for id:", id);
+    return null;
+  }
+  
+  function convertQuantity(value, fromUnit, toUnit) {
+    if (fromUnit === toUnit) return value;
+    if (fromUnit === 'kg' && toUnit === 'g') return value * 1000;
+    if (fromUnit === 'g' && toUnit === 'kg') return value * 0.001;
+    return value;
+  }
+  
+  function updateCost(formItem) {
+    var insumoSelect = formItem.querySelector('.insumo-select');
+    var quantidadeInput = formItem.querySelector('.quantidade-input');
+    var unidadeSelect = formItem.querySelector('.unidade-select');
+    var custoInput = formItem.querySelector('.custo-utilizada');
+    
+    if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) {
+      console.error("Missing one or more required elements in formItem.", formItem);
+      return;
+    }
+    
+    var insumoId = insumoSelect.value;
+    var quantidade = parseFloat(quantidadeInput.value) || 0;
+    var selectedUnit = unidadeSelect.value;
+    var insumoData = getInsumoDataById(insumoId);
+    if (insumoData) {
+      var insumoPrice = parseFloat(insumoData.preco);
+      var insumoUnit = insumoData.unidade;
+      var convertedQuantity = convertQuantity(quantidade, selectedUnit, insumoUnit);
+      var cost = convertedQuantity * insumoPrice;
+      custoInput.value = cost.toFixed(2);
+      console.log("Cost updated for formItem:", cost.toFixed(2));
+    } else {
+      custoInput.value = "";
+    }
+  }
+  
+  function updateTotals() {
+    var totalWeight = 0;
+    var totalCost = 0;
+    Array.prototype.forEach.call(document.querySelectorAll('.formset-item'), function(item) {
+      var quantidadeInput = item.querySelector('.quantidade-input');
+      var unidadeSelect = item.querySelector('.unidade-select');
+      var insumoSelect = item.querySelector('.insumo-select');
+      var custoInput = item.querySelector('.custo-utilizada');
+      
+      if (!quantidadeInput || !unidadeSelect || !insumoSelect || !custoInput) return;
+      
+      var quantidade = parseFloat(quantidadeInput.value) || 0;
+      var selectedUnit = unidadeSelect.value;
+      var insumoData = getInsumoDataById(insumoSelect.value);
+      if (insumoData) {
+        if (insumoData.unidade === 'kg' || insumoData.unidade === 'g') {
+          var converted = convertQuantity(quantidade, selectedUnit, 'g');
+          totalWeight += converted;
+        }
+        var cost = parseFloat(custoInput.value) || 0;
+        totalCost += cost;
+      }
+    });
+    document.getElementById("pesoTotal").value = totalWeight.toFixed(2);
+    document.getElementById("custoTotal").value = totalCost.toFixed(2);
+    
+    var precoKGInput = document.getElementById("precoKG");
+    if (totalWeight > 0) {
+      var precoKG = (totalCost / totalWeight) * 1000;
+      precoKGInput.value = precoKG.toFixed(2);
+    } else {
+      precoKGInput.value = "";
+    }
+    
+    var porcaoInput = document.querySelector("input[name='porcao_sugerida']");
+    var porcao = porcaoInput ? (parseFloat(porcaoInput.value) || 0) : 0;
+    var rendimentoInput = document.getElementById("rendimento");
+    if (porcao > 0) {
+      var rendimento = totalWeight / porcao;
+      rendimentoInput.value = rendimento.toFixed(1);
+    } else {
+      rendimentoInput.value = "";
+    }
+    console.log("Totals updated: Weight =", totalWeight.toFixed(2), "Cost =", totalCost.toFixed(2));
+  }
+  
+  function bindEvents(formItem) {
+    var insumoSelect = formItem.querySelector('.insumo-select');
+    var quantidadeInput = formItem.querySelector('.quantidade-input');
+    var unidadeSelect = formItem.querySelector('.unidade-select');
+    Array.prototype.forEach.call([insumoSelect, quantidadeInput, unidadeSelect], function(el) {
+      if (!el) return;
+      el.addEventListener('change', function() {
+        updateCost(formItem);
+        updateTotals();
+      });
+      el.addEventListener('keyup', function() {
+        updateCost(formItem);
+        updateTotals();
+      });
+    });
+  }
+  
+  Array.prototype.forEach.call(document.querySelectorAll('.formset-item'), function(item) {
+    bindEvents(item);
+  });
+  
+  var porcaoInput = document.querySelector("input[name='porcao_sugerida']");
+  if (porcaoInput) {
+    porcaoInput.addEventListener('change', updateTotals);
+    porcaoInput.addEventListener('keyup', updateTotals);
+  } else {
+    console.log("Field 'porcao_sugerida' not found.");
+  }
+  
+  var addInsumoButton = document.getElementById("addInsumo");
+  var formsetContainer = document.getElementById("formset-container");
+  // Usar querySelector para buscar o management form TOTAL_FORMS, independentemente do prefixo
+  var totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+  if (!totalForms) {
+    console.error("Management form field TOTAL_FORMS not found.");
+  }
+  
+  addInsumoButton.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (!totalForms) return;
+    var currentFormCount = parseInt(totalForms.value);
+    console.log("Current TOTAL_FORMS:", currentFormCount);
+    var emptyFormTemplate = document.getElementById("empty-form-template").innerHTML;
+    if (!emptyFormTemplate) {
+      console.error("Empty form template not found.");
+      return;
+    }
+    var newFormHtml = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+    var newFormContainer = document.createElement("div");
+    newFormContainer.innerHTML = newFormHtml;
+    var newForm = newFormContainer.firstElementChild;
+    if (!newForm) {
+      console.error("New form not generated properly.");
+      return;
+    }
+    formsetContainer.appendChild(newForm);
+    totalForms.value = currentFormCount + 1;
+    console.log("New TOTAL_FORMS:", totalForms.value);
+    bindEvents(newForm);
+    updateTotals();
+  });
+  
+  document.addEventListener("click", function(e) {
+    var removeBtn = e.target.closest(".remove-item");
+    if (removeBtn) {
+      e.preventDefault();
+      var item = removeBtn.closest(".formset-item");
+      var items = formsetContainer.querySelectorAll(".formset-item");
+      if (items.length > 1) {
+        item.remove();
+        totalForms.value = formsetContainer.querySelectorAll(".formset-item").length;
+        console.log("Item removed. New TOTAL_FORMS:", totalForms.value);
+        updateTotals();
+      } else {
+        alert("Pelo menos um insumo é obrigatório.");
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cadastro de Restaurante{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Cadastro de Restaurante</h2>
+  <form method="post" action="{% url 'restaurante:cadastro_restaurante' %}" class="needs-validation" novalidate>
+    {% csrf_token %}
+    <h3 class="mb-3">Dados do Restaurante</h3>
+
+    <!-- Tipo de Pessoa -->
+    <div class="mb-3">
+      <label for="id_tipo_pessoa" class="form-label">
+        <i class="fas fa-user"></i> Tipo de Pessoa:
+      </label>
+      {{ form.tipo_pessoa }}
+    </div>
+
+    <!-- Campos para Pessoa Jurídica -->
+    <div id="pessoa_juridica" style="display: none;">
+      <div class="mb-3">
+        <label for="id_cnpj" class="form-label">
+          <i class="fas fa-building"></i> CNPJ:
+        </label>
+        {{ form.cnpj }}
+      </div>
+      <div class="mb-3">
+        <label for="id_nome_restaurante" class="form-label">
+          <i class="fas fa-briefcase"></i> Nome do Restaurante:
+        </label>
+        {{ form.nome_restaurante }}
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="id_inscricao_estadual" class="form-label">
+            <i class="fas fa-file-alt"></i> Inscrição Estadual:
+          </label>
+          {{ form.inscricao_estadual }}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="id_inscricao_municipal" class="form-label">
+            <i class="fas fa-file-alt"></i> Inscrição Municipal:
+          </label>
+          {{ form.inscricao_municipal }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos para Pessoa Física -->
+    <div id="pessoa_fisica" style="display: none;">
+      <div class="mb-3">
+        <label for="id_cpf" class="form-label">
+          <i class="fas fa-id-card"></i> CPF:
+        </label>
+        {{ form.cpf }}
+      </div>
+      <div class="mb-3">
+        <label for="id_rg" class="form-label">
+          <i class="fas fa-id-badge"></i> RG:
+        </label>
+        {{ form.rg }}
+      </div>
+    </div>
+
+    <!-- Informações de Contato -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="id_email" class="form-label">
+          <i class="fas fa-envelope"></i> E-mail:
+        </label>
+        {{ form.email }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_telefone" class="form-label">
+          <i class="fas fa-phone"></i> Telefone:
+        </label>
+        {{ form.telefone }}
+      </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="id_cep" class="form-label">
+          <i class="fas fa-map-marker-alt"></i> CEP:
+        </label>
+        {{ form.cep }}
+      </div>
+      <div class="col-md-8 mb-3">
+        <label for="id_endereco" class="form-label">
+          <i class="fas fa-road"></i> Endereço:
+        </label>
+        {{ form.endereco }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <label for="id_numero" class="form-label">
+          <i class="fas fa-home"></i> Número:
+        </label>
+        {{ form.numero }}
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="id_complemento" class="form-label">
+          <i class="fas fa-edit"></i> Complemento:
+        </label>
+        {{ form.complemento }}
+      </div>
+      <div class="col-md-5 mb-3">
+        <label for="id_bairro" class="form-label">
+          <i class="fas fa-location-arrow"></i> Bairro:
+        </label>
+        {{ form.bairro }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="id_cidade" class="form-label">
+          <i class="fas fa-city"></i> Cidade:
+        </label>
+        {{ form.cidade }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="id_estado" class="form-label">
+          <i class="fas fa-flag"></i> Estado:
+        </label>
+        {{ form.estado }}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-save"></i> Cadastrar Restaurante
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Certifique-se de que o axios esteja carregado, se não estiver definido no base.html -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Exibir campos de Pessoa Física ou Jurídica conforme a seleção
+    const tipoPessoaEl = document.getElementById('id_tipo_pessoa');
+    if (tipoPessoaEl) {
+      tipoPessoaEl.addEventListener('change', function () {
+        const tipoPessoa = this.value;
+        const pessoaFisicaDiv = document.getElementById('pessoa_fisica');
+        const pessoaJuridicaDiv = document.getElementById('pessoa_juridica');
+        pessoaFisicaDiv.style.display = (tipoPessoa === 'PF') ? 'block' : 'none';
+        pessoaJuridicaDiv.style.display = (tipoPessoa === 'PJ') ? 'block' : 'none';
+      });
+    }
+
+    // Buscar CEP e preencher os campos de endereço
+    const cepEl = document.getElementById('id_cep');
+    if (cepEl) {
+      cepEl.addEventListener('blur', function () {
+        const cep = this.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+          console.log('Buscando CEP: ' + cep);
+          axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => {
+              console.log('Resposta CEP:', response.data);
+              if (!response.data.erro) {
+                const enderecoEl = document.getElementById('id_endereco');
+                const bairroEl = document.getElementById('id_bairro');
+                const cidadeEl = document.getElementById('id_cidade');
+                const estadoEl = document.getElementById('id_estado');
+                if (enderecoEl) enderecoEl.value = response.data.logradouro || '';
+                if (bairroEl) bairroEl.value = response.data.bairro || '';
+                if (cidadeEl) cidadeEl.value = response.data.localidade || '';
+                if (estadoEl) estadoEl.value = response.data.uf || '';
+              } else {
+                alert('CEP não encontrado.');
+              }
+            })
+            .catch(error => {
+              console.error('Erro ao buscar CEP:', error);
+              alert('Erro ao buscar CEP.');
+            });
+        }
+      });
+    }
+
+    // Buscar dados do CNPJ e preencher o campo de nome do restaurante
+    const cnpjEl = document.getElementById('id_cnpj');
+    if (cnpjEl) {
+      cnpjEl.addEventListener('blur', function () {
+        const cnpj = this.value.replace(/\D/g, '');
+        if (cnpj.length === 14) {
+          console.log('Buscando CNPJ: ' + cnpj);
+          axios.get(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`)
+            .then(response => {
+              console.log('Resposta CNPJ:', response.data);
+              if (!response.data.status || response.data.status !== 'ERROR') {
+                const nomeRestauranteEl = document.getElementById('id_nome_restaurante');
+                if (nomeRestauranteEl) {
+                  nomeRestauranteEl.value = response.data.nome || '';
+                }
+              } else {
+                alert('CNPJ não encontrado ou inválido.');
+              }
+            })
+            .catch(error => {
+              console.error('Erro ao buscar CNPJ:', error);
+              alert('Erro ao buscar CNPJ. (Possível bloqueio por CORS)');
+            });
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
