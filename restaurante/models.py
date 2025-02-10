@@ -23,7 +23,7 @@ class Restaurante(models.Model):
     email = models.EmailField("E-mail", blank=True, null=True)
     telefone = models.CharField("Telefone", max_length=20, blank=True, null=True)
 
-    # Endereço
+    # Endereço (campos obrigatórios: CEP, Endereço e Bairro)
     cep = models.CharField("CEP", max_length=9)
     endereco = models.CharField("Endereço", max_length=255)
     numero = models.CharField("Número", max_length=10, blank=True, null=True)
@@ -34,14 +34,16 @@ class Restaurante(models.Model):
 
     data_cadastro = models.DateTimeField("Data de Cadastro", auto_now_add=True)
     
-    # NOVO CAMPO: Fator de Correção Financeiro
+    # Fator de Correção Financeiro
     fator_correcao_financeiro = models.DecimalField(
         "Fator Correção Financeiro",
         max_digits=10,
         decimal_places=2,
         default=1.00,
+        blank=True,  # Permite que o campo seja deixado em branco no formulário
         help_text="Utilize esse fator para ajustes na precificação (ex: 1.00 = sem alteração, 1.10 = +10%)"
     )
+
 
     def __str__(self):
         if self.tipo_pessoa == 'PJ':

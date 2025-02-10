@@ -3,92 +3,134 @@
 
 {% block title %}Dashboard - FichaPro{% endblock %}
 
-<!-- Inclui o arquivo CSS do Dashboard -->
 {% block extra_css %}
-<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+  <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+  <style>
+    /* Estilos aprimorados para os widgets do dashboard */
+    .dashboard-widgets .card {
+      border-radius: 15px;
+      transition: transform 0.2s ease-in-out;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .dashboard-widgets .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .card-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #333;
+    }
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: #777;
+    }
+    .chart {
+      height: 350px;
+    }
+    /* Estilos para responsividade */
+    @media (max-width: 768px) {
+      .card-value {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid my-4">
-    <h1 class="mb-5 text-center">Dashboard</h1>
+  <h1 class="mb-5 text-center text-primary">Dashboard</h1>
 
-    <!-- Widgets Section -->
-    <section class="dashboard-widgets row g-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title">
-                                <span class="legend-circle bg-success me-2"></span>
-                                Income
-                            </h5>
-                            <p class="card-value">$3,240</p>
-                            <p class="card-subtitle">No additional income</p>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9.75,15.937c0,.932,1.007,1.688,2.25,1.688s2.25-.756,2.25-1.688S13.243,14.25,12,14.25s-2.25-.756-2.25-1.688,1.007-1.687,2.25-1.687,2.25.755,2.25,1.687"></path>
-                            <rect x="1.5" y="6.75" width="21" height="15" rx="1.5"></rect>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title">
-                                <span class="legend-circle bg-danger me-2"></span>
-                                Expense
-                            </h5>
-                            <p class="card-value">$1,500</p>
-                            <p class="card-subtitle">+ $6.50 bank charges fee</p>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="17.25" cy="17.25" r="6"></circle>
-                            <path d="M17.25 14.25L17.25 13.5"></path>
-                            <path d="M17.25 21L17.25 20.25"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <h5 class="card-title text-uppercase">Total</h5>
-                    <p class="card-value">$74,925</p>
-                    <p class="card-subtitle">
-                        <span class="badge bg-success">+12%</span> from $65,934
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <h5 class="card-title text-uppercase">Pageviews</h5>
-                    <p class="card-value">123,598</p>
-                    <p class="card-subtitle">
-                        <span class="badge bg-danger">-9.2%</span> from 134,969
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Charts Section -->
-    <section class="charts mt-5">
+  <!-- Widgets Section -->
+  <section class="dashboard-widgets row g-4">
+    {% comment %}
+      Exemplo de widgets: Cada widget deve conter título, valor, subtítulo e um ícone.
+      Certifique-se de que sua view passe uma lista de dicionários para 'widgets'.
+      Exemplo:
+      widgets = [
+         { 'title': 'Usuários', 'value': 150, 'subtitle': 'Cadastrados', 'icon': 'bi-people' },
+         { 'title': 'Vendas', 'value': '$12.345', 'subtitle': 'Este mês', 'icon': 'bi-currency-dollar' },
+         ...
+      ]
+    {% endcomment %}
+    {% for widget in widgets %}
+      <div class="col-lg-3 col-md-6">
         <div class="card shadow border-0">
-            <div class="card-header">
-                <h3 class="m-0">Sales Chart</h3>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="card-title text-uppercase text-muted">{{ widget.title }}</h5>
+                <p class="card-value">{{ widget.value }}</p>
+                <p class="card-subtitle">{{ widget.subtitle }}</p>
+              </div>
+              <!-- Usando Bootstrap Icons; ajuste o nome da classe se estiver usando outra biblioteca -->
+              <i class="bi {{ widget.icon }} text-primary" style="font-size: 2rem;"></i>
             </div>
-            <div class="card-body">
-                <div id="sales-chart" class="chart" style="height: 300px;"></div>
-            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    {% empty %}
+      <p class="text-center">Nenhum dado disponível no momento.</p>
+    {% endfor %}
+  </section>
+
+  <!-- Charts Section -->
+  <section class="charts mt-5">
+    <div class="card shadow border-0">
+      <div class="card-header bg-primary text-white">
+        <h3 class="m-0">Vendas Mensais</h3>
+      </div>
+      <div class="card-body">
+        <canvas id="sales-chart" class="chart"></canvas>
+      </div>
+    </div>
+  </section>
 </div>
+
+{% block extra_js %}
+  <!-- Inclua o Chart.js a partir de um CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Verifica se os dados do gráfico foram passados corretamente no contexto
+    var salesLabels = {{ sales_data.labels|default:"[]"|safe }};
+    var salesValues = {{ sales_data.values|default:"[]"|safe }};
+
+    // Se não houver dados, defina arrays vazias
+    if (!salesLabels.length) {
+      salesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
+      salesValues = [0, 0, 0, 0, 0, 0];
+    }
+
+    var ctx = document.getElementById('sales-chart').getContext('2d');
+    var salesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: salesLabels,
+        datasets: [{
+          label: 'Vendas',
+          data: salesValues,
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value;
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+{% endblock %}
 {% endblock %}
