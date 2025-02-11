@@ -131,13 +131,7 @@ document.addEventListener("DOMContentLoaded", function() {
     return null;
   }
   
-  function convertQuantity(value, fromUnit, toUnit) {
-    if (fromUnit === toUnit) return value;
-    if (fromUnit === 'kg' && toUnit === 'g') return value * 1000;
-    if (fromUnit === 'g' && toUnit === 'kg') return value * 0.001;
-    return value;
-  }
-  
+  // Atualiza o custo para cada item do formset
   function updateCost(formItem) {
     var insumoSelect = formItem.querySelector('.insumo-select');
     var quantidadeInput = formItem.querySelector('.quantidade-input');
@@ -145,19 +139,38 @@ document.addEventListener("DOMContentLoaded", function() {
     var custoInput = formItem.querySelector('.custo-utilizada');
     
     if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) {
-      console.error("Missing one or more required elements in formItem.", formItem);
+      console.error("Missing elements in formItem:", formItem);
       return;
     }
     
     var insumoId = insumoSelect.value;
     var quantidade = parseFloat(quantidadeInput.value) || 0;
-    var selectedUnit = unidadeSelect.value;
     var insumoData = getInsumoDataById(insumoId);
     if (insumoData) {
       var insumoPrice = parseFloat(insumoData.preco);
-      var insumoUnit = insumoData.unidade;
-      var convertedQuantity = convertQuantity(quantidade, selectedUnit, insumoUnit);
-      var cost = convertedQuantity * insumoPrice;
+      var base_unit = insumoData.unidade_medida ? insumoData.unidade_medida.toLowerCase() : "";
+      var selected_unit = unidadeSelect.value.toLowerCase();
+      
+      // Se o insumo foi cadastrado em 'g' mas o usuário selecionou 'kg', converta a quantidade de kg para g
+      var quantidade_convertida = quantidade;
+      if (base_unit === 'g' && selected_unit === 'kg') {
+          quantidade_convertida = quantidade * 1000;
+          console.log("Converted quantity from kg to g:", quantidade, "kg ->", quantidade_convertida, "g");
+      } else if (base_unit === 'kg' && selected_unit === 'g') {
+          quantidade_convertida = quantidade / 1000;
+          console.log("Converted quantity from g to kg:", quantidade, "g ->", quantidade_convertida, "kg");
+      }
+      
+      var cost = 0;
+      // Se o insumo estiver cadastrado em 'g' e o campo 'peso' (peso base) estiver definido
+      if (base_unit === 'g' && insumoData.peso) {
+        var pesoBase = parseFloat(insumoData.peso);
+        cost = (quantidade_convertida / pesoBase) * insumoPrice;
+        console.log("Calculating cost (g): quantidade (converted) =", quantidade_convertida, "pesoBase =", pesoBase, "insumoPrice =", insumoPrice);
+      } else {
+        cost = quantidade_convertida * insumoPrice;
+        console.log("Calculating cost (direct): quantidade (converted) =", quantidade_convertida, "insumoPrice =", insumoPrice);
+      }
       custoInput.value = cost.toFixed(2);
       console.log("Cost updated for formItem:", cost.toFixed(2));
     } else {
@@ -170,19 +183,26 @@ document.addEventListener("DOMContentLoaded", function() {
     var totalCost = 0;
     Array.prototype.forEach.call(document.querySelectorAll('.formset-item'), function(item) {
       var quantidadeInput = item.querySelector('.quantidade-input');
-      var unidadeSelect = item.querySelector('.unidade-select');
       var insumoSelect = item.querySelector('.insumo-select');
       var custoInput = item.querySelector('.custo-utilizada');
       
-      if (!quantidadeInput || !unidadeSelect || !insumoSelect || !custoInput) return;
+      if (!quantidadeInput || !insumoSelect || !custoInput) return;
       
       var quantidade = parseFloat(quantidadeInput.value) || 0;
-      var selectedUnit = unidadeSelect.value;
       var insumoData = getInsumoDataById(insumoSelect.value);
       if (insumoData) {
-        if (insumoData.unidade === 'kg' || insumoData.unidade === 'g') {
-          var converted = convertQuantity(quantidade, selectedUnit, 'g');
-          totalWeight += converted;
+        var base_unit = insumoData.unidade_medida ? insumoData.unidade_medida.toLowerCase() : "";
+        var selected_unit = item.querySelector('.unidade-select').value.toLowerCase();
+        var quantidade_convertida = quantidade;
+        if (base_unit === 'g' && selected_unit === 'kg') {
+          quantidade_convertida = quantidade * 1000;
+        } else if (base_unit === 'kg' && selected_unit === 'g') {
+          quantidade_convertida = quantidade / 1000;
+        }
+        if (base_unit === 'g') {
+          totalWeight += quantidade_convertida;
+        } else {
+          totalWeight += quantidade_convertida * 1000;
         }
         var cost = parseFloat(custoInput.value) || 0;
         totalCost += cost;
@@ -193,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     var precoKGInput = document.getElementById("precoKG");
     if (totalWeight > 0) {
-      var precoKG = (totalCost / totalWeight) * 1000;
+      var precoKG = (totalCost / (totalWeight / 1000));
       precoKGInput.value = precoKG.toFixed(2);
     } else {
       precoKGInput.value = "";
@@ -215,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var insumoSelect = formItem.querySelector('.insumo-select');
     var quantidadeInput = formItem.querySelector('.quantidade-input');
     var unidadeSelect = formItem.querySelector('.unidade-select');
-    Array.prototype.forEach.call([insumoSelect, quantidadeInput, unidadeSelect], function(el) {
+    [insumoSelect, quantidadeInput, unidadeSelect].forEach(function(el) {
       if (!el) return;
       el.addEventListener('change', function() {
         updateCost(formItem);
@@ -242,7 +262,6 @@ document.addEventListener("DOMContentLoaded", function() {
   
   var addInsumoButton = document.getElementById("addInsumo");
   var formsetContainer = document.getElementById("formset-container");
-  // Usar querySelector para buscar o management form TOTAL_FORMS, independentemente do prefixo
   var totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
   if (!totalForms) {
     console.error("Management form field TOTAL_FORMS not found.");

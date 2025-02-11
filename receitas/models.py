@@ -1,5 +1,5 @@
+# receitas/models.py
 from django.db import models
-from django.utils import timezone
 from decimal import Decimal
 from insumos.models import Insumo
 from restaurante.models import Restaurante
@@ -24,21 +24,23 @@ class Receita(models.Model):
     def __str__(self):
         return self.nome_prato
 
-
 class ReceitaInsumo(models.Model):
     receita = models.ForeignKey(Receita, on_delete=models.CASCADE, related_name='itens')
     insumo = models.ForeignKey(Insumo, on_delete=models.CASCADE)
     quantidade_utilizada = models.DecimalField(
         "Quantidade Utilizada", max_digits=10, decimal_places=2,
-        help_text="Informe a quantidade utilizada (na mesma unidade do insumo)"
+        help_text="Informe a quantidade utilizada (na mesma unidade em que o insumo foi cadastrado)"
     )
-    # Este campo pode ser recalculado automaticamente
     custo_utilizado = models.DecimalField("Custo Utilizado (R$)", max_digits=10, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Calcula o custo proporcional baseado no preço do insumo e na quantidade utilizada.
         if self.insumo.preco and self.quantidade_utilizada:
-            self.custo_utilizado = self.quantidade_utilizada * self.insumo.preco
+            if self.insumo.unidade_medida.lower() == 'g' and self.insumo.peso and self.insumo.peso > 0:
+                peso_base = Decimal(self.insumo.peso)  # Exemplo: 200
+                valor_por_grama = self.insumo.preco / peso_base  # Exemplo: 3.60 / 200 = 0.018
+                self.custo_utilizado = self.quantidade_utilizada * valor_por_grama
+            else:
+                self.custo_utilizado = self.quantidade_utilizada * self.insumo.preco
         super().save(*args, **kwargs)
 
     def __str__(self):

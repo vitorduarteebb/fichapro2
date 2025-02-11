@@ -13,14 +13,24 @@ def ficha_tecnica_cadastro(request, restaurante_id):
     FichaInsumoFormSet = inlineformset_factory(FichaTecnica, FichaTecnicaInsumo, form=FichaTecnicaInsumoForm, extra=1, can_delete=True)
     FichaReceitaFormSet = inlineformset_factory(FichaTecnica, FichaTecnicaReceita, form=FichaTecnicaReceitaForm, extra=1, can_delete=True)
     
+    # Prepara os dados dos insumos para o JavaScript (incluindo a unidade e o peso base)
     insumos = Insumo.objects.all()
     insumos_json = json.dumps([
-        {'id': insumo.id, 'preco': str(insumo.preco), 'unidade': insumo.unidade_medida}
+        {
+            'id': insumo.id,
+            'preco': str(insumo.preco),
+            'unidade': insumo.unidade_medida,  # Ex.: "g" ou "kg"
+            'peso': str(insumo.peso) if insumo.peso is not None else ""
+        }
         for insumo in insumos
     ])
+    
     receitas = Receita.objects.all()
     receitas_json = json.dumps([
-        {'id': receita.id, 'preco_kg': str(receita.preco_kg if receita.preco_kg is not None else "0.00")}
+        {
+            'id': receita.id,
+            'preco_kg': str(receita.preco_kg if receita.preco_kg is not None else "0.00")
+        }
         for receita in receitas
     ])
     
@@ -44,8 +54,6 @@ def ficha_tecnica_cadastro(request, restaurante_id):
                     ficha_insumo = item_form.save(commit=False)
                     ficha_insumo.ficha_tecnica = ficha
                     ficha_insumo.save()
-                    var_unidade = item_form.cleaned_data.get('unidade', 'kg').lower()
-                    # Converter para gramas se a unidade selecionada for 'kg' e o insumo estiver em kg
                     if ficha_insumo.insumo.unidade_medida.lower() == 'kg':
                         total_peso += ficha_insumo.quantidade_utilizada * Decimal("1000")
                     else:

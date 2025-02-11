@@ -14,10 +14,10 @@ class ReceitaForm(forms.ModelForm):
         }
 
 class ReceitaInsumoForm(forms.ModelForm):
-    # Campo extra para selecionar a unidade utilizada no cadastro da receita.
+    # Mesmo que a unidade seja selecionada, a lógica assume que o preço é informado por grama (se a unidade for "g")
     unidade = forms.ChoiceField(
         choices=[('kg', 'kg'), ('g', 'g'), ('L', 'L'), ('ml', 'ml')],
-        initial='kg',
+        initial='g',
         label="Unidade"
     )
     class Meta:

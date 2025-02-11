@@ -1,0 +1,15 @@
+
+# Arquivos de configuração local
+fichapro2/settings.py
+fichapro2/settings_local.py
+
+# Ambiente virtual
+venv/
+env/
+
+# Arquivos de banco de dados (se não for SQLite ou se for gerado dinamicamente)
+*.sqlite3
+
+# Arquivos compilados
+*.pyc
+__pycache__/

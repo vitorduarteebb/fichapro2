@@ -11,9 +11,15 @@ def receita_cadastro(request, restaurante_id):
     restaurante = get_object_or_404(Restaurante, pk=restaurante_id)
     ReceitaInsumoFormSet = inlineformset_factory(Receita, ReceitaInsumo, form=ReceitaInsumoForm, extra=1, can_delete=True)
     
+    # Atualize o JSON para enviar as chaves 'unidade_medida' e 'peso'
     insumos = Insumo.objects.all()
     insumos_json = json.dumps([
-        {'id': insumo.id, 'preco': str(insumo.preco), 'unidade': insumo.unidade_medida}
+        {
+            'id': insumo.id,
+            'preco': str(insumo.preco),
+            'unidade_medida': insumo.unidade_medida,  # Por exemplo, "g"
+            'peso': str(insumo.peso) if insumo.peso is not None else ""  # Peso base, ex.: "200.00"
+        }
         for insumo in insumos
     ])
     
@@ -34,7 +40,7 @@ def receita_cadastro(request, restaurante_id):
                     receita_insumo = item_form.save(commit=False)
                     receita_insumo.receita = receita
                     receita_insumo.save()
-                    # Converte para gramas se o insumo estiver em kg
+                    # Converte para gramas se o insumo estiver em kg; caso contrário, assume a quantidade já em g.
                     if receita_insumo.insumo.unidade_medida.lower() == 'kg':
                         total_peso += receita_insumo.quantidade_utilizada * Decimal("1000")
                     else:

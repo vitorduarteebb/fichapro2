@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static widget_tweaks %}
+
+{% block title %}Dashboard - {{ restaurante.nome_restaurante }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+<style>
+  .dashboard-container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .header, .section {
+      margin-bottom: 30px;
+  }
+  .header h1 {
+      font-size: 2.5rem;
+      color: #007bff;
+      text-align: center;
+  }
+  .section-title {
+      font-size: 1.5rem;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+  }
+  .totals {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: right;
+  }
+  .data-table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+  .data-table th, .data-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+  }
+  .data-table th {
+      background-color: #007bff;
+      color: #fff;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <!-- Cabeçalho -->
+  <div class="header">
+    <h1>Dashboard - {{ restaurante.nome_restaurante }}</h1>
+    <p>
+      <strong>Fator de Correção Financeiro:</strong>
+      <input type="number" step="0.01" id="fator_correcao" value="{{ restaurante.fator_correcao_financeiro }}" class="form-control" style="width:150px; display:inline-block;">
+      <small>(Altere para atualizar os valores)</small>
+    </p>
+  </div>
+
+  <!-- Seção de Receitas -->
+  <div class="section">
+    <div class="section-title">Receitas</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Preço/kg (R$)</th>
+          <th>Custo Ajustado (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="receitas-body">
+        {% for receita in receitas %}
+        <tr data-receita-id="{{ receita.id }}">
+          <td>{{ receita.id }}</td>
+          <td>{{ receita.nome_receita|default:receita }}</td>
+          <td class="preco-kg">{{ receita.preco_kg }}</td>
+          <td class="custo-ajustado">--</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Nenhuma receita cadastrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Seção de Fichas Técnicas -->
+  <div class="section">
+    <div class="section-title">Fichas Técnicas</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Descrição</th>
+          <th>Custo Total (R$)</th>
+          <th>Custo Ajustado (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="fichas-body">
+        {% for ficha in fichas %}
+        <tr data-ficha-id="{{ ficha.id }}">
+          <td>{{ ficha.id }}</td>
+          <td>{{ ficha.descricao|default:"-" }}</td>
+          <td class="custo-total">{{ ficha.custo_total }}</td>
+          <td class="custo-ajustado">--</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Nenhuma ficha técnica cadastrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totais Gerais -->
+  <div class="section totals">
+    <p>Peso Total (g): <span id="pesoTotal">0</span></p>
+    <p>Custo Total (R$): <span id="custoTotal">0.00</span></p>
+    <p>Valor de Venda Sugerido (R$): <span id="valorVendaSugerida">0.00</span></p>
+  </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  document.getElementById('fator_correcao').addEventListener('change', updateAllCosts);
+
+  function updateAllCosts() {
+    var fator = parseFloat(document.getElementById('fator_correcao').value) || 1.00;
+    
+    // Atualiza os custos ajustados para receitas
+    document.querySelectorAll('#receitas-body tr').forEach(function(row) {
+      var precoKG = parseFloat(row.querySelector('.preco-kg').textContent) || 0;
+      var custoAjustado = precoKG * fator;
+      row.querySelector('.custo-ajustado').textContent = custoAjustado.toFixed(2);
+    });
+    
+    // Atualiza os custos ajustados para fichas técnicas
+    document.querySelectorAll('#fichas-body tr').forEach(function(row) {
+      var custoTotal = parseFloat(row.querySelector('.custo-total').textContent) || 0;
+      var custoAjustado = custoTotal * fator;
+      row.querySelector('.custo-ajustado').textContent = custoAjustado.toFixed(2);
+    });
+    
+    // Calcula os totais gerais
+    var totalReceitas = 0, totalFichas = 0;
+    document.querySelectorAll('#receitas-body tr').forEach(function(row) {
+      totalReceitas += parseFloat(row.querySelector('.custo-ajustado').textContent) || 0;
+    });
+    document.querySelectorAll('#fichas-body tr').forEach(function(row) {
+      totalFichas += parseFloat(row.querySelector('.custo-ajustado').textContent) || 0;
+    });
+    var custoTotal = totalReceitas + totalFichas;
+    document.getElementById("custoTotal").textContent = custoTotal.toFixed(2);
+    
+    // Valor de venda sugerido: custo total multiplicado pelo fator (exemplo simples)
+    document.getElementById("valorVendaSugerida").textContent = (custoTotal * fator).toFixed(2);
+    
+    // Exemplo: peso total fictício
+    document.getElementById("pesoTotal").textContent = (1000).toFixed(2);
+  }
+  
+  // Atualiza os valores ao carregar a página
+  updateAllCosts();
+</script>
+{% endblock %}
+{% endblock %}
