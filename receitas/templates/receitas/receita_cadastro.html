@@ -4,46 +4,214 @@
 {% block title %}Cadastro de Receita{% endblock %}
 
 {% block content %}
+<!-- Estilos conforme o design original (Dark Mode com toques laranja) -->
+<style>
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+  h2 {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #ff9900;
+  }
+  .card {
+    background-color: #1e1e1e;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9);
+  }
+  .card-header {
+    padding: 15px 20px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #ff9900, #ff6600);
+    color: #121212;
+  }
+  .card-body {
+    padding: 20px;
+  }
+  label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+    color: #e0e0e0;
+  }
+  .form-control {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px;
+    color: #e0e0e0;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .form-control:focus {
+    background-color: #333;
+    border-color: #ff9900;
+    box-shadow: 0 0 8px rgba(255, 153, 0, 0.5);
+    outline: none;
+  }
+  .btn {
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+  }
+  .btn-primary {
+    background-color: #ff9900;
+    border: none;
+    color: #121212;
+  }
+  .btn-secondary {
+    background-color: #ff6600;
+    border: none;
+    color: #fff;
+  }
+  .btn-danger {
+    background-color: #ff3366;
+    border: none;
+    color: #fff;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -10px;
+  }
+  .row > [class*="col-"] {
+    padding: 10px;
+  }
+  .formset-item {
+    animation: fadeInUp 0.5s ease both;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .icon {
+    margin-right: 8px;
+    color: #ff9900;
+  }
+  .btn-light {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+    color: #fff;
+  }
+  .btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .profile-upload {
+    margin-bottom: 2rem;
+  }
+  .profile-img-preview {
+    text-align: center;
+  }
+  .profile-img-preview img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ff9900;
+  }
+  .file-input-wrapper {
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
 <div class="container mt-4">
-  <h2>Cadastro de Receita para {{ restaurante.nome_restaurante }}</h2>
+  <h2><i class="fas fa-file-alt icon"></i>Cadastro de Receita para {{ restaurante.nome_restaurante }}</h2>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
+    
     <!-- Dados da Receita -->
     <div class="card mb-3">
-      <div class="card-header bg-primary text-white">
-        Dados da Receita
-      </div>
+      <div class="card-header"><i class="fas fa-info-circle icon"></i>Dados da Receita</div>
       <div class="card-body">
-        {{ form.as_p }}
+        <div class="profile-upload mb-4">
+          <div class="profile-img-preview">
+            <img id="profilePreview" src="{% static 'images/default_profile.png' %}" alt="Foto de Perfil">
+          </div>
+          <div class="file-input-wrapper">
+            <label for="id_imagem" class="btn btn-secondary">
+              <i class="fas fa-camera icon"></i> Alterar Foto
+            </label>
+            {{ form.imagem }}
+          </div>
+        </div>
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          {% if field.name != "imagem" %}
+            <div class="form-group">
+              {{ field.label_tag }}
+              {{ field|add_class:"form-control" }}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
     </div>
     
     <!-- Insumos Utilizados -->
     <div class="card mb-3">
-      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <span>Insumos Utilizados</span>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-boxes icon"></i>Insumos Utilizados</span>
         <button type="button" class="btn btn-light btn-sm" id="addInsumo" title="Adicionar Insumo">
           <i class="fas fa-plus"></i>
         </button>
       </div>
       <div class="card-body">
-        {{ formset.management_form }}
-        <div id="formset-container">
-          {% for form in formset %}
+        {{ formset_insumos.management_form }}
+        <div id="formset-container-insumos">
+          {% for form in formset_insumos %}
           <div class="row mb-2 formset-item">
             <div class="col-md-3">
               {{ form.insumo.label_tag }}
               {{ form.insumo|add_class:"form-control insumo-select" }}
             </div>
             <div class="col-md-2">
-              {{ form.unidade.label_tag }}
-              {{ form.unidade|add_class:"form-control unidade-select" }}
-            </div>
-            <div class="col-md-3">
               {{ form.quantidade_utilizada.label_tag }}
               {{ form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+              {{ form.unidade.label_tag }}
+              {{ form.unidade|add_class:"form-control unidade-select" }}
+            </div>
+            <div class="col-md-2">
+              <label>Ajuste Tipo</label>
+              {{ form.ajuste_tipo }}
+            </div>
+            <div class="col-md-1">
+              <label>Ajuste Sinal</label>
+              {{ form.ajuste_sinal }}
+            </div>
+            <div class="col-md-1">
+              <label>% / Parte</label>
+              {{ form.ajuste_percentual }}
+            </div>
+            <div class="col-md-1">
               <label>Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
@@ -55,22 +223,34 @@
           </div>
           {% endfor %}
         </div>
-        <!-- Template vazio para novos insumos -->
-        <script type="text/template" id="empty-form-template">
+        <!-- Template para novo insumo -->
+        <script type="text/template" id="empty-form-template-insumos">
           <div class="row mb-2 formset-item">
             <div class="col-md-3">
-              {{ formset.empty_form.insumo.label_tag }}
-              {{ formset.empty_form.insumo|add_class:"form-control insumo-select" }}
+              {{ formset_insumos.empty_form.insumo.label_tag }}
+              {{ formset_insumos.empty_form.insumo|add_class:"form-control insumo-select" }}
             </div>
             <div class="col-md-2">
-              {{ formset.empty_form.unidade.label_tag }}
-              {{ formset.empty_form.unidade|add_class:"form-control unidade-select" }}
+              {{ formset_insumos.empty_form.quantidade_utilizada.label_tag }}
+              {{ formset_insumos.empty_form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
             </div>
-            <div class="col-md-3">
-              {{ formset.empty_form.quantidade_utilizada.label_tag }}
-              {{ formset.empty_form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
+            <div class="col-md-2">
+              {{ formset_insumos.empty_form.unidade.label_tag }}
+              {{ formset_insumos.empty_form.unidade|add_class:"form-control unidade-select" }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+              <label>Ajuste Tipo</label>
+              {{ formset_insumos.empty_form.ajuste_tipo }}
+            </div>
+            <div class="col-md-1">
+              <label>Ajuste Sinal</label>
+              {{ formset_insumos.empty_form.ajuste_sinal }}
+            </div>
+            <div class="col-md-1">
+              <label>% / Parte</label>
+              {{ formset_insumos.empty_form.ajuste_percentual }}
+            </div>
+            <div class="col-md-1">
               <label>Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
@@ -87,25 +267,21 @@
     <!-- Totais da Receita -->
     <div class="card mb-3">
       <div class="card-header bg-dark text-white">
-        Totais da Receita
+        <i class="fas fa-calculator icon"></i> Totais da Receita
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label>Peso Total (g):</label>
             <input type="text" id="pesoTotal" class="form-control" readonly>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label>Custo Total (R$):</label>
             <input type="text" id="custoTotal" class="form-control" readonly>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label>Preço do KG (R$):</label>
-            <input type="text" id="precoKG" class="form-control" readonly>
-          </div>
-          <div class="col-md-3">
-            <label>Rendimento (porções):</label>
-            <input type="text" id="rendimento" class="form-control" readonly>
+            <input type="text" id="precoKg" class="form-control" readonly>
           </div>
         </div>
       </div>
@@ -115,64 +291,80 @@
   </form>
 </div>
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+// Função auxiliar para obter o valor selecionado de um grupo de radios
+function getRadioValue(container, nameSuffix) {
+  var radio = container.querySelector('input[name$="' + nameSuffix + '"]:checked');
+  if (radio) return radio.value;
+  var select = container.querySelector('select[name$="' + nameSuffix + '"]');
+  if (select) return select.value;
+  return null;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-  console.log("DOM fully loaded.");
-  var insumosData = {{ insumos_json|default:"[]"|safe }};
-  console.log("Insumos Data:", insumosData);
-  
-  function getInsumoDataById(id) {
-    for (var i = 0; i < insumosData.length; i++) {
-      if (parseInt(insumosData[i].id) === parseInt(id)) {
-        return insumosData[i];
+  // Preview da imagem
+  const imagemInput = document.getElementById("id_imagem");
+  const profilePreview = document.getElementById("profilePreview");
+  if (imagemInput) {
+    imagemInput.style.display = "none";
+    imagemInput.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) { profilePreview.src = e.target.result; }
+        reader.readAsDataURL(file);
       }
-    }
-    console.log("Insumo not found for id:", id);
-    return null;
+    });
   }
   
-  // Atualiza o custo para cada item do formset
-  function updateCost(formItem) {
+  var insumosData = {{ insumos_json|default:"[]"|safe }};
+  
+  function getInsumoDataById(id) {
+    return insumosData.find(function(insumo) {
+      return parseInt(insumo.id) === parseInt(id);
+    }) || null;
+  }
+  
+  function convertQuantity(value, fromUnit, toUnit) {
+    if (fromUnit === toUnit) return value;
+    if (fromUnit === 'kg' && toUnit === 'g') return value * 1000;
+    if (fromUnit === 'g' && toUnit === 'kg') return value / 1000;
+    return value;
+  }
+  
+  function updateCostInsumo(formItem) {
     var insumoSelect = formItem.querySelector('.insumo-select');
     var quantidadeInput = formItem.querySelector('.quantidade-input');
     var unidadeSelect = formItem.querySelector('.unidade-select');
     var custoInput = formItem.querySelector('.custo-utilizada');
-    
-    if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) {
-      console.error("Missing elements in formItem:", formItem);
-      return;
-    }
+    if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) return;
     
     var insumoId = insumoSelect.value;
     var quantidade = parseFloat(quantidadeInput.value) || 0;
+    var unidadeSelecionada = unidadeSelect.value;
     var insumoData = getInsumoDataById(insumoId);
+    
     if (insumoData) {
       var insumoPrice = parseFloat(insumoData.preco);
-      var base_unit = insumoData.unidade_medida ? insumoData.unidade_medida.toLowerCase() : "";
-      var selected_unit = unidadeSelect.value.toLowerCase();
+      var baseQuantity = parseFloat(insumoData.quantidade) || 1;
+      var convertedQuantity = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+      var baseCost = (convertedQuantity * insumoPrice) / baseQuantity;
+      var finalCost = baseCost;
       
-      // Se o insumo foi cadastrado em 'g' mas o usuário selecionou 'kg', converta a quantidade de kg para g
-      var quantidade_convertida = quantidade;
-      if (base_unit === 'g' && selected_unit === 'kg') {
-          quantidade_convertida = quantidade * 1000;
-          console.log("Converted quantity from kg to g:", quantidade, "kg ->", quantidade_convertida, "g");
-      } else if (base_unit === 'kg' && selected_unit === 'g') {
-          quantidade_convertida = quantidade / 1000;
-          console.log("Converted quantity from g to kg:", quantidade, "g ->", quantidade_convertida, "kg");
+      var ajusteTipo = getRadioValue(formItem, "-ajuste_tipo") || 'none';
+      var ajusteSinal = getRadioValue(formItem, "-ajuste_sinal") || 'mais';
+      var ajustePercentualEl = formItem.querySelector('input[name$="-ajuste_percentual"]');
+      var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
+      
+      if (ajusteTipo === 'fc' && percentual > 0) {
+        finalCost = baseCost * (ajusteSinal === 'mais' ? (1 + percentual/100) : (1 - percentual/100));
+      } else if (ajusteTipo === 'ipc' && percentual > 0) {
+        finalCost = baseCost * (100 / percentual);
       }
       
-      var cost = 0;
-      // Se o insumo estiver cadastrado em 'g' e o campo 'peso' (peso base) estiver definido
-      if (base_unit === 'g' && insumoData.peso) {
-        var pesoBase = parseFloat(insumoData.peso);
-        cost = (quantidade_convertida / pesoBase) * insumoPrice;
-        console.log("Calculating cost (g): quantidade (converted) =", quantidade_convertida, "pesoBase =", pesoBase, "insumoPrice =", insumoPrice);
-      } else {
-        cost = quantidade_convertida * insumoPrice;
-        console.log("Calculating cost (direct): quantidade (converted) =", quantidade_convertida, "insumoPrice =", insumoPrice);
-      }
-      custoInput.value = cost.toFixed(2);
-      console.log("Cost updated for formItem:", cost.toFixed(2));
+      custoInput.value = finalCost.toFixed(2);
     } else {
       custoInput.value = "";
     }
@@ -181,114 +373,80 @@ document.addEventListener("DOMContentLoaded", function() {
   function updateTotals() {
     var totalWeight = 0;
     var totalCost = 0;
-    Array.prototype.forEach.call(document.querySelectorAll('.formset-item'), function(item) {
+    document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
       var quantidadeInput = item.querySelector('.quantidade-input');
       var insumoSelect = item.querySelector('.insumo-select');
+      var unidadeSelect = item.querySelector('.unidade-select');
       var custoInput = item.querySelector('.custo-utilizada');
-      
-      if (!quantidadeInput || !insumoSelect || !custoInput) return;
+      if (!quantidadeInput || !insumoSelect || !unidadeSelect || !custoInput) return;
       
       var quantidade = parseFloat(quantidadeInput.value) || 0;
+      var unidadeSelecionada = unidadeSelect.value;
       var insumoData = getInsumoDataById(insumoSelect.value);
       if (insumoData) {
-        var base_unit = insumoData.unidade_medida ? insumoData.unidade_medida.toLowerCase() : "";
-        var selected_unit = item.querySelector('.unidade-select').value.toLowerCase();
-        var quantidade_convertida = quantidade;
-        if (base_unit === 'g' && selected_unit === 'kg') {
-          quantidade_convertida = quantidade * 1000;
-        } else if (base_unit === 'kg' && selected_unit === 'g') {
-          quantidade_convertida = quantidade / 1000;
-        }
-        if (base_unit === 'g') {
-          totalWeight += quantidade_convertida;
+        var converted = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+        var rawWeight = 0;
+        if (insumoData.unidade.toLowerCase() === 'kg') {
+          rawWeight = converted * 1000;
         } else {
-          totalWeight += quantidade_convertida * 1000;
+          rawWeight = converted;
         }
-        var cost = parseFloat(custoInput.value) || 0;
-        totalCost += cost;
+        
+        var ajusteTipo = getRadioValue(item, "-ajuste_tipo") || 'none';
+        var ajustePercentualEl = item.querySelector('input[name$="-ajuste_percentual"]');
+        var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
+        var effectiveWeight = rawWeight;
+        if (ajusteTipo === 'ipc' && percentual > 0) {
+          effectiveWeight = rawWeight * (percentual / 100);
+        } else if (ajusteTipo === 'fc' && percentual > 0) {
+          var ajusteSinal = getRadioValue(item, "-ajuste_sinal") || 'mais';
+          if (ajusteSinal === 'mais') {
+            effectiveWeight = rawWeight * (1 + percentual/100);
+          } else if (ajusteSinal === 'menos') {
+            effectiveWeight = rawWeight * (1 - percentual/100);
+          }
+        }
+        
+        totalWeight += effectiveWeight;
+        totalCost += parseFloat(custoInput.value) || 0;
       }
     });
     document.getElementById("pesoTotal").value = totalWeight.toFixed(2);
     document.getElementById("custoTotal").value = totalCost.toFixed(2);
-    
-    var precoKGInput = document.getElementById("precoKG");
-    if (totalWeight > 0) {
-      var precoKG = (totalCost / (totalWeight / 1000));
-      precoKGInput.value = precoKG.toFixed(2);
-    } else {
-      precoKGInput.value = "";
-    }
-    
-    var porcaoInput = document.querySelector("input[name='porcao_sugerida']");
-    var porcao = porcaoInput ? (parseFloat(porcaoInput.value) || 0) : 0;
-    var rendimentoInput = document.getElementById("rendimento");
-    if (porcao > 0) {
-      var rendimento = totalWeight / porcao;
-      rendimentoInput.value = rendimento.toFixed(1);
-    } else {
-      rendimentoInput.value = "";
-    }
-    console.log("Totals updated: Weight =", totalWeight.toFixed(2), "Cost =", totalCost.toFixed(2));
+    var precoKg = totalWeight > 0 ? totalCost / (totalWeight / 1000) : 0;
+    document.getElementById("precoKg").value = precoKg.toFixed(2);
   }
   
-  function bindEvents(formItem) {
-    var insumoSelect = formItem.querySelector('.insumo-select');
-    var quantidadeInput = formItem.querySelector('.quantidade-input');
-    var unidadeSelect = formItem.querySelector('.unidade-select');
-    [insumoSelect, quantidadeInput, unidadeSelect].forEach(function(el) {
-      if (!el) return;
-      el.addEventListener('change', function() {
-        updateCost(formItem);
-        updateTotals();
-      });
-      el.addEventListener('keyup', function() {
-        updateCost(formItem);
-        updateTotals();
-      });
+  function bindEvents(item) {
+    var elements = item.querySelectorAll('.insumo-select, .quantidade-input, .unidade-select, input[name$="-ajuste_percentual"]');
+    elements.forEach(function(el) {
+      el.addEventListener('change', function() { updateCostInsumo(item); updateTotals(); });
+      el.addEventListener('keyup', function() { updateCostInsumo(item); updateTotals(); });
+    });
+    var radios = item.querySelectorAll('input[type="radio"]');
+    radios.forEach(function(radio) {
+      radio.addEventListener('change', function() { updateCostInsumo(item); updateTotals(); });
     });
   }
   
-  Array.prototype.forEach.call(document.querySelectorAll('.formset-item'), function(item) {
+  document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
     bindEvents(item);
   });
   
-  var porcaoInput = document.querySelector("input[name='porcao_sugerida']");
-  if (porcaoInput) {
-    porcaoInput.addEventListener('change', updateTotals);
-    porcaoInput.addEventListener('keyup', updateTotals);
-  } else {
-    console.log("Field 'porcao_sugerida' not found.");
-  }
-  
   var addInsumoButton = document.getElementById("addInsumo");
-  var formsetContainer = document.getElementById("formset-container");
-  var totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
-  if (!totalForms) {
-    console.error("Management form field TOTAL_FORMS not found.");
-  }
-  
+  var formsetContainer = document.getElementById("formset-container-insumos");
+  var totalForms = document.querySelector('input[name^="insumos-TOTAL_FORMS"]');
   addInsumoButton.addEventListener("click", function(e) {
     e.preventDefault();
-    if (!totalForms) return;
-    var currentFormCount = parseInt(totalForms.value);
-    console.log("Current TOTAL_FORMS:", currentFormCount);
-    var emptyFormTemplate = document.getElementById("empty-form-template").innerHTML;
-    if (!emptyFormTemplate) {
-      console.error("Empty form template not found.");
-      return;
-    }
-    var newFormHtml = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
-    var newFormContainer = document.createElement("div");
-    newFormContainer.innerHTML = newFormHtml;
-    var newForm = newFormContainer.firstElementChild;
-    if (!newForm) {
-      console.error("New form not generated properly.");
-      return;
-    }
-    formsetContainer.appendChild(newForm);
-    totalForms.value = currentFormCount + 1;
-    console.log("New TOTAL_FORMS:", totalForms.value);
-    bindEvents(newForm);
+    var currentCount = parseInt(totalForms.value);
+    var template = document.getElementById("empty-form-template-insumos").innerHTML;
+    var newFormHtml = template.replace(/__prefix__/g, currentCount);
+    var tempDiv = document.createElement("div");
+    tempDiv.innerHTML = newFormHtml;
+    var newItem = tempDiv.firstElementChild;
+    formsetContainer.appendChild(newItem);
+    totalForms.value = currentCount + 1;
+    bindEvents(newItem);
     updateTotals();
   });
   
@@ -297,17 +455,17 @@ document.addEventListener("DOMContentLoaded", function() {
     if (removeBtn) {
       e.preventDefault();
       var item = removeBtn.closest(".formset-item");
-      var items = formsetContainer.querySelectorAll(".formset-item");
-      if (items.length > 1) {
+      var container = item.parentNode;
+      if (container.querySelectorAll(".formset-item").length > 1) {
         item.remove();
-        totalForms.value = formsetContainer.querySelectorAll(".formset-item").length;
-        console.log("Item removed. New TOTAL_FORMS:", totalForms.value);
+        totalForms.value = container.querySelectorAll(".formset-item").length;
         updateTotals();
       } else {
-        alert("Pelo menos um insumo é obrigatório.");
+        alert("Pelo menos um item é obrigatório.");
       }
     }
   });
 });
 </script>
+{% endblock %}
 {% endblock %}

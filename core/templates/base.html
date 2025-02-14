@@ -4,19 +4,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}FichaPro{% endblock %}</title>
+    <title>{% block title %}DETALHES DO RESTAURANTE{% endblock %}</title>
     <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Font Awesome -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-      rel="stylesheet"
-    />
-    <!-- Base CSS -->
-    <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <!-- Base CSS removido (arquivo foi deletado) -->
     <style>
       :root {
         --primary-color: #00bac7;
@@ -27,13 +20,15 @@
         --sidebar-width: 250px;
         --sidebar-collapsed-width: 60px;
       }
-      /* Tema escuro */
+      /* Aplicação global: todo texto em MAIÚSCULO, branco e sem negrito */
       body {
         margin: 0;
         padding: 0;
         background-color: var(--bg-dark);
         color: #f8f9fa;
         font-family: sans-serif;
+        text-transform: uppercase;
+        font-weight: normal;
       }
       a {
         color: var(--primary-color);
@@ -47,20 +42,19 @@
         min-height: 100vh;
         transition: all 0.3s ease;
       }
-      /* Sidebar com largura variável */
+      /* Sidebar com largura variável e colapsável */
       .sidebar {
         background-color: var(--bg-secondary);
         color: var(--text-color);
         width: var(--sidebar-width);
         transition: width 0.3s ease;
         overflow-x: hidden;
-        /* Borda temporária para facilitar a visualização (remova depois) */
         border-right: 1px solid #444;
       }
       .sidebar.collapsed {
         width: var(--sidebar-collapsed-width);
       }
-      /* Botão de toggle */
+      /* Botão de toggle na sidebar */
       .sidebar .toggle-btn {
         text-align: right;
         padding: 1rem;
@@ -91,7 +85,6 @@
         background-color: var(--hover-bg-color);
         color: #fff;
       }
-      /* Ícones e textos */
       .sidebar li a .link-text {
         margin-left: 10px;
         transition: opacity 0.3s ease;
@@ -100,19 +93,6 @@
       .sidebar.collapsed li a .link-text {
         opacity: 0;
       }
-      /* Submenu – mantém o mesmo comportamento */
-      .btn-toggle-nav a {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 1.75rem;
-        font-size: 0.9rem;
-        color: var(--text-color);
-      }
-      .btn-toggle-nav a:hover,
-      .btn-toggle-nav a:focus {
-        background-color: var(--hover-bg-color);
-        color: #fff;
-      }
       /* Conteúdo principal ocupa o restante do espaço */
       .main-content {
         flex: 1;
@@ -120,13 +100,11 @@
         padding: 1.5rem;
         transition: margin-left 0.3s ease;
       }
-      /* Em telas menores, o layout vira coluna */
       @media (max-width: 768px) {
         .wrapper {
           flex-direction: column;
         }
-        .sidebar,
-        .sidebar.collapsed {
+        .sidebar {
           width: 100%;
         }
         .main-content {
@@ -144,53 +122,63 @@
           <i class="fas fa-bars"></i>
         </div>
         <ul>
-          <!-- Dashboard -->
+          <!-- Exemplo de itens do menu -->
           <li>
             <a href="{% url 'usuarios:dashboard' %}" class="active">
               <i class="fas fa-home"></i>
-              <span class="link-text">Dashboard</span>
+              <span class="link-text">DASHBOARD</span>
             </a>
           </li>
-          <!-- Menu Restaurante com submenus -->
           <li>
             <a data-bs-toggle="collapse" href="#menuRestaurante" role="button" aria-expanded="false" aria-controls="menuRestaurante">
               <i class="fas fa-utensils"></i>
-              <span class="link-text">Restaurante</span>
+              <span class="link-text">RESTAURANTE</span>
             </a>
             <div class="collapse" id="menuRestaurante">
               <ul class="btn-toggle-nav list-unstyled">
                 <li>
                   <a href="{% url 'restaurante:cadastro_restaurante' %}">
                     <i class="fas fa-plus-circle"></i>
-                    <span class="link-text">Cadastro</span>
+                    <span class="link-text">CADASTRO</span>
                   </a>
                 </li>
                 <li>
                   <a href="{% url 'restaurante:lista_restaurantes' %}">
                     <i class="fas fa-list"></i>
-                    <span class="link-text">Lista</span>
+                    <span class="link-text">LISTA</span>
                   </a>
                 </li>
               </ul>
             </div>
           </li>
-          <!-- Outros itens de menu se necessário -->
+          <!-- Outros itens, se necessário -->
         </ul>
       </nav>
       <!-- Main Content -->
       <div class="main-content">
         {% block content %}
+        <!-- Conteúdo específico da página -->
         {% endblock %}
       </div>
     </div>
-    <!-- JavaScript para Toggle (aguarda o DOM carregar) -->
+    <!-- JavaScript para Toggle da Sidebar com Persistência -->
     <script>
       document.addEventListener("DOMContentLoaded", function() {
+        // Verifica no localStorage se a sidebar estava colapsada
+        var sidebar = document.getElementById("sidebarMenu");
+        if (localStorage.getItem("sidebarCollapsed") === "true") {
+          sidebar.classList.add("collapsed");
+        }
         var toggleBtn = document.getElementById("sidebarToggle");
-        toggleBtn.addEventListener("click", function () {
-          var sidebar = document.getElementById("sidebarMenu");
-          sidebar.classList.toggle("collapsed");
-        });
+        if (toggleBtn) {
+          toggleBtn.addEventListener("click", function () {
+            if (sidebar) {
+              sidebar.classList.toggle("collapsed");
+              // Salva o estado atual no localStorage
+              localStorage.setItem("sidebarCollapsed", sidebar.classList.contains("collapsed"));
+            }
+          });
+        }
       });
     </script>
     <!-- Bootstrap JS -->
@@ -198,3 +186,4 @@
     {% block extra_js %}{% endblock %}
   </body>
 </html>
+  

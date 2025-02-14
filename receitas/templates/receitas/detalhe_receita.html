@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}DETALHES DA RECEITA{% endblock %}
+
+{% block content %}
+<style>
+  /* TEMA ESCURO COM GRADIENTE LARANJA – TODO TEXTO EM MAIÚSCULO, BRANCO E SEM NEGRITO */
+  body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+  }
+  .card {
+    background-color: #1e1e1e;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 15px 20px;
+    font-size: 1.5rem;
+    font-weight: normal;
+    background: linear-gradient(135deg, #ff9900, #ff6600);
+    color: #ffffff;
+  }
+  .card-body {
+    padding: 20px;
+    color: #ffffff;
+    font-weight: normal;
+  }
+  .profile-img {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .profile-img img {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #ff9900;
+  }
+  .section-title {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ff9900;
+    padding-bottom: 5px;
+  }
+  .data-item {
+    margin-bottom: 10px;
+  }
+  .data-item span {
+    color: #ff9900;
+  }
+  .link-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .link-back:hover {
+    text-decoration: underline;
+  }
+  ul li {
+    margin-bottom: 5px;
+  }
+  /* Estilo para o formulário do valor trabalhado */
+  .valor-form {
+    margin-bottom: 20px;
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<div class="container mt-4">
+  <a href="{% url 'restaurante:restaurante_detail' receita.restaurante.id %}" class="link-back">
+    <i class="fas fa-arrow-left"></i> VOLTAR AO RESTAURANTE
+  </a>
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-utensils"></i> {{ receita.nome_prato|upper }}
+    </div>
+    <div class="card-body">
+      <div class="profile-img">
+        {% if receita.imagem %}
+          <img src="{{ receita.imagem.url }}" alt="{{ receita.nome_prato|upper }}">
+        {% else %}
+          <img src="{% static 'images/default_profile.png' %}" alt="IMAGEM PADRÃO">
+        {% endif %}
+      </div>
+      
+      <div class="section-title">DETALHES DA RECEITA</div>
+      <div class="data-item">
+        <span>PORÇÃO SUGERIDA (G):</span> {{ receita.porcao_sugerida|floatformat:0 }}
+      </div>
+      <div class="data-item">
+        <span>TEMPO DE PREPARO (MIN):</span> {{ receita.tempo_preparo }}
+      </div>
+      <div class="data-item">
+        <span>PREÇO DO KG (R$):</span> {{ receita.preco_kg|floatformat:2 }}
+      </div>
+      
+      <!-- Campo editável para atualizar o VALOR TRABALHADO (ficará acima dos preços de venda) -->
+      <div class="section-title">VALOR TRABALHADO (R$)</div>
+      <form method="post" action="{% url 'receitas:atualizar_valor_trabalhado' receita.id %}" class="valor-form">
+        {% csrf_token %}
+        <input type="text" name="valor_trabalhado" value="{{ receita.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
+        <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
+      </form>
+      
+      <!-- Seção para exibir os preços de venda (IFOOD) -->
+      <div class="section-title">VALORES DE VENDA</div>
+      <div id="sale-prices"></div>
+      
+      <div class="section-title">INGREDIENTES</div>
+      <ul>
+        {% for item in receita.itens.all|dictsort:"insumo.nome" %}
+          <li>
+            <span>{{ item.insumo.nome|upper }}:</span>
+            {{ item.quantidade_utilizada }} {{ item.insumo.unidade_medida|upper }}
+            (CUSTO: R$ {{ item.custo_utilizado }})
+          </li>
+        {% empty %}
+          <li>NENHUM INSUMO CADASTRADO.</li>
+        {% endfor %}
+      </ul>
+      
+      <div class="section-title">MODO DE PREPARO</div>
+      <div class="data-item">
+        {{ receita.modo_preparo|linebreaks }}
+      </div>
+      
+      {% if receita.receitas_relacionadas.all %}
+      <div class="section-title">RECEITAS RELACIONADAS</div>
+      <ul>
+        {% for r in receita.receitas_relacionadas.all|dictsort:"nome_prato" %}
+          <li>
+            <a href="{% url 'receitas:detalhe_receita' r.id %}" class="link-back">
+              {{ r.nome_prato|upper }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  // Função para atualizar os preços de venda via AJAX
+  function updateReceitaData() {
+    fetch("{% url 'receitas:api_detalhe_receita' receita.id %}")
+      .then(response => response.json())
+      .then(data => {
+        let venda = parseFloat(data.valor_venda_sugerida);
+        let salePricesHtml =
+          "<div class='data-item'><span>VALOR DE VENDA SUGERIDA (R$):</span> " + venda.toFixed(2) + "</div>" +
+          "<div class='data-item'><span>PREÇO IFOOD PLANO 1 (R$):</span> " + (venda * 1.12).toFixed(2) + "</div>" +
+          "<div class='data-item'><span>PREÇO IFOOD PLANO 2 (R$):</span> " + (venda * 1.25).toFixed(2) + "</div>";
+        document.getElementById("sale-prices").innerHTML = salePricesHtml;
+      })
+      .catch(error => console.log("ERRO AO ATUALIZAR OS DADOS:", error));
+  }
+  
+  // Atualiza imediatamente ao carregar a página e a cada 30 segundos
+  document.addEventListener("DOMContentLoaded", function() {
+    updateReceitaData();
+    setInterval(updateReceitaData, 30000);
+  });
+</script>
+{% endblock %}
+{% endblock %}

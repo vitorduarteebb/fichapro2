@@ -19,9 +19,36 @@ class FichaTecnicaInsumoForm(forms.ModelForm):
         initial='kg',
         label="Unidade"
     )
+    AJUSTE_CHOICES = (
+        ('none', 'Sem ajuste'),
+        ('fator', 'FATOR DE CORREÇÃO IC'),
+        ('ipc', 'IPC'),
+    )
+    ajuste_tipo = forms.ChoiceField(
+        choices=AJUSTE_CHOICES,
+        widget=forms.RadioSelect,
+        required=False,
+        initial='none',
+        label="Tipo de Ajuste"
+    )
+    ajuste_sinal = forms.ChoiceField(
+        choices=(('mais', '+'), ('menos', '–')),
+        widget=forms.RadioSelect,
+        required=False,
+        initial='mais',
+        label="Sinal"
+    )
+    ajuste_percentual = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        required=False,
+        min_value=0,
+        max_value=100,
+        label="Perc (%)"
+    )
     class Meta:
         model = FichaTecnicaInsumo
-        fields = ['insumo', 'quantidade_utilizada', 'unidade']
+        fields = ['insumo', 'quantidade_utilizada', 'unidade', 'ajuste_tipo', 'ajuste_sinal', 'ajuste_percentual']
         widgets = {
             'insumo': forms.Select(attrs={'class': 'form-control insumo-select'}),
             'quantidade_utilizada': forms.NumberInput(attrs={'class': 'form-control quantidade-input', 'placeholder': 'Quantidade Utilizada'}),

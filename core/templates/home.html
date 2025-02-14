@@ -1,64 +1,280 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FICHAPRO - Plataforma de Gestão</title>
-
-    <!-- Estilos CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FichaPro - Plataforma de Gestão</title>
+  
+  <!-- Fontes e Ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- AOS - Animate on Scroll -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+  <!-- CSS Customizado -->
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  
+  <style>
+    /* Definindo as cores da marca */
+    :root {
+      --primary-color: #FFD700; /* Amarelo */
+      --dark-color: #000000;    /* Preto */
+      --light-color: #ffffff;   /* Branco */
+      --wpp-green: #25D366;     /* Verde WhatsApp */
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+    }
+    
+    /* Navbar */
+    .navbar {
+      background-color: var(--dark-color) !important;
+    }
+    .navbar-brand, .nav-link {
+      color: var(--light-color) !important;
+    }
+    
+    /* Hero Section - Agora com fundo2.webp */
+    .hero-section {
+      background: url('{% static "imagem/fundo2.webp" %}') no-repeat center center;
+      background-size: cover;
+      height: 100vh;
+      position: relative;
+    }
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+    .hero-content h1,
+    .hero-content p,
+    .hero-content ul li {
+      color: var(--light-color);
+    }
+    .hero-content ul li i {
+      color: var(--primary-color);
+    }
+    
+    /* Botões */
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: var(--dark-color);
+    }
+    .btn-primary:hover {
+      background-color: #e6c200;
+      border-color: #e6c200;
+    }
+    
+    /* Seções */
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: var(--dark-color);
+    }
+    .feature-box {
+      background: var(--light-color);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      transition: transform 0.3s;
+    }
+    .feature-box:hover {
+      transform: translateY(-5px);
+    }
+    
+    /* Footer */
+    footer {
+      background-color: var(--dark-color);
+      color: var(--light-color);
+    }
+    
+    /* Botão flutuante do WhatsApp */
+    .btn-floating-wpp {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--wpp-green);
+      color: var(--light-color);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s, background 0.3s;
+      z-index: 1000;
+      border: 2px solid var(--light-color);
+    }
+    .btn-floating-wpp:hover {
+      transform: scale(1.1);
+      background: #1EBE5D;
+    }
+    
+    /* Seção Recursos - Sem fundo de imagem para não conflitar */
+    #recursos {
+      background: var(--light-color);
+      color: var(--dark-color);
+      padding: 2rem 0;
+    }
+  </style>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #0d1117;">
-        <div class="container">
-            <a class="navbar-brand" href="#">FICHAPRO</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="#sobre">Sobre</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="#recursos">Recursos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ml-3" href="{% url 'usuarios:login' %}">Login</a>
-                    </li>
-                </ul>
-            </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">FichaPro</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#sobre">Sobre</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#recursos">Recursos</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-primary ml-3" href="{% url 'usuarios:login' %}">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container text-center hero-content d-flex align-items-center justify-content-center" style="height: 100%;">
+      <div data-aos="fade-up">
+        <h1 class="display-4 font-weight-bold">A principal plataforma de gestão de restaurantes</h1>
+        <p class="lead mt-3">Otimize sua operação e aumente sua eficiência com nossa tecnologia inovadora.</p>
+        <ul class="list-unstyled mt-4">
+          <li data-aos="fade-up" data-aos-delay="100"><i class="fas fa-check-circle"></i> Soluções completas e integradas</li>
+          <li data-aos="fade-up" data-aos-delay="200"><i class="fas fa-check-circle"></i> Gestão inteligente e eficiente</li>
+          <li data-aos="fade-up" data-aos-delay="300"><i class="fas fa-check-circle"></i> Suporte dedicado para o seu negócio</li>
+        </ul>
+        <a href="#sobre" class="btn btn-primary btn-lg mt-4" data-aos="fade-up" data-aos-delay="400">Fale com um especialista</a>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Seção "Sobre" -->
+  <section id="sobre" class="py-5">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">O que o FichaPro pode fazer pelo seu negócio</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
+          <p class="lead">
+            Imagine a seguinte situação: um negócio com duas unidades para atender aos clientes. Como oferecer o mesmo prato em ambos os locais, sem diferenças gritantes de preço, qualidade, quantidade ou apresentação? A resposta está em <strong>um padrão que vem da ficha técnica!</strong>
+          </p>
+          <p>
+            Tudo que veremos daqui para frente se baseia em um tripé composto por <strong>precisão, qualidade e controle financeiro</strong>.
+          </p>
+          <h4 class="mt-4">8 pilares essenciais:</h4>
+          <ul>
+            <li data-aos="fade-up" data-aos-delay="200">Padronização</li>
+            <li data-aos="fade-up" data-aos-delay="250">Controle de qualidade</li>
+            <li data-aos="fade-up" data-aos-delay="300">Precificação justa e sadia</li>
+            <li data-aos="fade-up" data-aos-delay="350">Custo real x Lucro real</li>
+            <li data-aos="fade-up" data-aos-delay="400">Fidelização do cliente</li>
+            <li data-aos="fade-up" data-aos-delay="450">Consistência de apresentação e sabor</li>
+            <li data-aos="fade-up" data-aos-delay="500">Onboarding com treinamento eficaz</li>
+            <li data-aos="fade-up" data-aos-delay="550">Eficiência laboral</li>
+          </ul>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero-section" style="background-image: url('{% static 'imagem/banner_ficha2.webp' %}'); height: 100vh; background-size: cover; background-position: center; position: relative;">
-        <div class="overlay" style="background: rgba(0, 0, 0, 0.6); position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        <div class="container text-center text-light d-flex align-items-center justify-content-center" style="height: 100%;">
-            <div>
-                <h1 class="display-4 font-weight-bold">A principal plataforma de gestão de restaurantes</h1>
-                <p class="lead mt-3">Otimize sua operação e aumente sua eficiência com nossa tecnologia inovadora.</p>
-                <ul class="list-unstyled mt-4">
-                    <li><i class="fas fa-check-circle text-primary"></i> Soluções completas e integradas</li>
-                    <li><i class="fas fa-check-circle text-primary"></i> Gestão inteligente e eficiente</li>
-                    <li><i class="fas fa-check-circle text-primary"></i> Suporte dedicado para o seu negócio</li>
-                </ul>
-                <a href="#" class="btn btn-primary btn-lg mt-4">Fale com um especialista</a>
-            </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Seção de Recursos / Benefícios -->
+  <section id="recursos" class="py-5">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="section-title">Benefícios do FichaPro</h2>
+      </div>
+      <div class="row">
+        <!-- Controle de Gastos -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-box">
+            <h5>Controle de Gastos Preciso</h5>
+            <p>
+              A ficha técnica detalha a quantidade exata de cada ingrediente e seu custo, permitindo calcular com precisão o custo de produção de cada prato. Isso garante uma margem de lucro clara e possibilita ajustes rápidos diante de mudanças nos preços dos insumos.
+            </p>
+          </div>
         </div>
-    </header>
-
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/home.js' %}"></script>
+        <!-- Padronização dos Pratos -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-box">
+            <h5>Padronização dos Pratos</h5>
+            <p>
+              A ficha técnica assegura que cada prato seja preparado da mesma forma, mantendo a consistência no sabor e na apresentação, independentemente de quem esteja na cozinha. Essencial para manter a qualidade mesmo em dias movimentados ou com equipes rotativas.
+            </p>
+          </div>
+        </div>
+        <!-- Treinamento de Equipe -->
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-box">
+            <h5>Treinamento de Equipe</h5>
+            <p>
+              Ferramenta poderosa para o treinamento eficaz de novos colaboradores, a ficha técnica permite que todos sigam instruções precisas, garantindo que os novos integrantes se alinhem rapidamente ao padrão no preparo dos pratos – um diferencial competitivo.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Chamada para Ação com o método SIGA -->
+      <div class="row mt-4">
+        <div class="col-md-12 text-center" data-aos="fade-up" data-aos-delay="400">
+          <p class="lead">
+            Nós podemos fazer isso por você com nosso método <strong>SIGA - Sistema Integrado de Gestão Autônoma</strong>.
+          </p>
+          <a href="https://wa.me/5513997500654" target="_blank" class="btn btn-primary btn-lg mt-3">
+            <i class="fab fa-whatsapp"></i> Quer conhecer mais? Entre em contato!
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="py-4">
+    <div class="container text-center" data-aos="fade-up">
+      <p class="mb-0">© 2025 FichaPro. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+  
+  <!-- Botão Flutuante do WhatsApp (verde padrão) -->
+  <a href="https://wa.me/5513997500654" target="_blank" class="btn-floating-wpp">
+    <i class="fab fa-whatsapp fa-2x"></i>
+  </a>
+  
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <!-- AOS Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    AOS.init({
+      duration: 800,
+      once: true
+    });
+  </script>
+  <script src="{% static 'js/home.js' %}"></script>
 </body>
-
 </html>

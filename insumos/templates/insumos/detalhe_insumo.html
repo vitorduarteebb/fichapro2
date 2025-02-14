@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}DETALHES DO INSUMO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ insumo.nome|upper }}</h2>
+  <p><strong>Unidade:</strong> {{ insumo.unidade_medida|upper }}</p>
+  <p><strong>Quantidade:</strong> {{ insumo.quantidade }}</p>
+  <p><strong>Preço:</strong> R$ {{ insumo.preco }}</p>
+  <!-- Adicione outros campos conforme necessário -->
+  <a href="{% url 'insumos:lista_insumos' %}" class="btn btn-primary">Voltar à lista</a>
+</div>
+{% endblock %}

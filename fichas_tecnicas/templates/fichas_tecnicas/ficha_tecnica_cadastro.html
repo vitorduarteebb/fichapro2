@@ -5,23 +5,44 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>Cadastro de Ficha Técnica para {{ restaurante.nome_restaurante }}</h2>
+  <h2><i class="fas fa-file-alt icon"></i> Cadastro de Ficha Técnica para {{ restaurante.nome_restaurante }}</h2>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
+    
     <!-- Dados da Ficha Técnica -->
     <div class="card mb-3">
       <div class="card-header bg-primary text-white">
-        Dados da Ficha Técnica
+        <i class="fas fa-info-circle icon"></i> Dados da Ficha Técnica
       </div>
       <div class="card-body">
-        {{ form.as_p }}
+        <div class="profile-upload mb-4" style="text-align: center;">
+          <div class="profile-img-preview">
+            <img id="profilePreview" src="{% static 'images/default_profile.png' %}" alt="Foto de Perfil" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 4px solid #ff9900;">
+          </div>
+          <div class="file-input-wrapper" style="margin-top: 10px;">
+            <label for="id_imagem" class="btn btn-secondary">
+              <i class="fas fa-camera icon"></i> Alterar Foto
+            </label>
+            {{ form.imagem }}
+          </div>
+        </div>
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          {% if field.name != "imagem" %}
+            <div class="form-group">
+              {{ field.label_tag }}
+              {{ field|add_class:"form-control" }}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
     </div>
     
     <!-- Insumos Utilizados -->
     <div class="card mb-3">
-      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <span>Insumos Utilizados</span>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-boxes icon"></i> Insumos Utilizados</span>
         <button type="button" class="btn btn-light btn-sm" id="addInsumo" title="Adicionar Insumo">
           <i class="fas fa-plus"></i>
         </button>
@@ -43,11 +64,24 @@
               {{ form.unidade.label_tag }}
               {{ form.unidade|add_class:"form-control unidade-select" }}
             </div>
-            <div class="col-md-3">
+            <!-- Campos de ajuste -->
+            <div class="col-md-2">
+              {{ form.ajuste_tipo.label_tag }}
+              {{ form.ajuste_tipo|add_class:"ajuste-tipo" }}
+            </div>
+            <div class="col-md-1">
+              {{ form.ajuste_sinal.label_tag }}
+              {{ form.ajuste_sinal|add_class:"ajuste-sinal" }}
+            </div>
+            <div class="col-md-1">
+              {{ form.ajuste_percentual.label_tag }}
+              {{ form.ajuste_percentual|add_class:"ajuste-percentual" }}
+            </div>
+            <div class="col-md-1">
               <label>Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
               <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
                 <i class="fas fa-trash"></i>
               </button>
@@ -70,11 +104,30 @@
               {{ formset_insumos.empty_form.unidade.label_tag }}
               {{ formset_insumos.empty_form.unidade|add_class:"form-control unidade-select" }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+              <label>Ajuste Tipo</label>
+              <select class="form-control ajuste-tipo">
+                <option value="none" selected>Sem ajuste</option>
+                <option value="fator">FATOR DE CORREÇÃO IC</option>
+                <option value="ipc">IPC</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <label>Ajuste Sinal</label>
+              <select class="form-control ajuste-sinal">
+                <option value="mais" selected>Mais</option>
+                <option value="menos">Menos</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <label>% / Parte</label>
+              <input type="number" step="0.01" class="form-control ajuste-percentual" placeholder="%" value="0">
+            </div>
+            <div class="col-md-1">
               <label>Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
               <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
                 <i class="fas fa-trash"></i>
               </button>
@@ -86,8 +139,8 @@
     
     <!-- Receitas Selecionadas -->
     <div class="card mb-3">
-      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <span>Receitas Selecionadas</span>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-utensils icon"></i> Receitas Selecionadas</span>
         <button type="button" class="btn btn-light btn-sm" id="addReceita" title="Adicionar Receita">
           <i class="fas fa-plus"></i>
         </button>
@@ -153,7 +206,7 @@
     <!-- Totais da Ficha Técnica -->
     <div class="card mb-3">
       <div class="card-header bg-dark text-white">
-        Totais da Ficha Técnica
+        <i class="fas fa-calculator icon"></i> Totais da Ficha Técnica
       </div>
       <div class="card-body">
         <div class="row">
@@ -177,33 +230,56 @@
   </form>
 </div>
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+// Função auxiliar para obter o valor selecionado de um grupo de radios ou selects
+function getRadioValue(container, nameSuffix) {
+  var radio = container.querySelector('input[name$="' + nameSuffix + '"]:checked');
+  if (radio) return radio.value;
+  var select = container.querySelector('select[name$="' + nameSuffix + '"]');
+  if (select) return select.value;
+  return null;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   console.log("DOM fully loaded for Ficha Técnica.");
+  
+  // Preview da imagem
+  const imagemInput = document.getElementById("id_imagem");
+  const profilePreview = document.getElementById("profilePreview");
+  if (imagemInput) {
+    imagemInput.style.display = "none";
+    imagemInput.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) { profilePreview.src = e.target.result; }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
   var insumosData = {{ insumos_json|default:"[]"|safe }};
   var receitasData = {{ receitas_json|default:"[]"|safe }};
   console.log("Insumos Data:", insumosData);
   console.log("Receitas Data:", receitasData);
   
-  // Função para buscar dados de insumo por id
   function getInsumoDataById(id) {
     for (var i = 0; i < insumosData.length; i++) {
       if (parseInt(insumosData[i].id) === parseInt(id)) {
         return insumosData[i];
       }
     }
-    console.log("Insumo not found for id:", id);
     return null;
   }
   
-  // Função para buscar dados de receita por id
   function getReceitaDataById(id) {
     for (var i = 0; i < receitasData.length; i++) {
       if (parseInt(receitasData[i].id) === parseInt(id)) {
         return receitasData[i];
       }
     }
-    console.log("Receita not found for id:", id);
     return null;
   }
   
@@ -214,184 +290,146 @@ document.addEventListener("DOMContentLoaded", function() {
     return value;
   }
   
+  // Atualiza o custo de cada insumo
   function updateCostInsumo(formItem) {
     var insumoSelect = formItem.querySelector('.insumo-select');
     var quantidadeInput = formItem.querySelector('.quantidade-input');
     var unidadeSelect = formItem.querySelector('.unidade-select');
     var custoInput = formItem.querySelector('.custo-utilizada');
     if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) return;
+    
     var insumoId = insumoSelect.value;
     var quantidade = parseFloat(quantidadeInput.value) || 0;
-    var unidadeSelecionada = unidadeSelect.value.toLowerCase();
+    var unidadeSelecionada = unidadeSelect.value;
     var insumoData = getInsumoDataById(insumoId);
+    
     if (insumoData) {
       var insumoPrice = parseFloat(insumoData.preco);
-      var cost = 0;
-      var base_unit = insumoData.unidade ? insumoData.unidade.toLowerCase() : "";
-      // Se o insumo foi cadastrado em 'g'
-      if (base_unit === 'g' && insumoData.peso) {
-        var pesoBase = parseFloat(insumoData.peso);
-        // Converte a quantidade se o usuário selecionou 'kg'
-        var quantidade_convertida = (unidadeSelecionada === 'kg') ? (quantidade * 1000) : quantidade;
-        cost = (quantidade_convertida / pesoBase) * insumoPrice;
-        console.log("Calculating cost (g): quantidade (converted) =", quantidade_convertida, "pesoBase =", pesoBase, "insumoPrice =", insumoPrice);
-      } else {
-        cost = quantidade * insumoPrice;
-        console.log("Calculating cost (direct): quantidade =", quantidade, "insumoPrice =", insumoPrice);
+      var baseQuantity = parseFloat(insumoData.quantidade) || 1;
+      var convertedQuantity = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+      var baseCost = (convertedQuantity * insumoPrice) / baseQuantity;
+      var finalCost = baseCost;
+      
+      var ajusteTipo = getRadioValue(formItem, "-ajuste_tipo") || 'none';
+      var ajusteSinal = getRadioValue(formItem, "-ajuste_sinal") || 'mais';
+      var ajustePercentualEl = formItem.querySelector('.ajuste-percentual');
+      var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
+      
+      if (ajusteTipo === 'fator' && percentual > 0) {
+        finalCost = baseCost * (ajusteSinal === 'mais' ? (1 + percentual/100) : (1 - percentual/100));
+      } else if (ajusteTipo === 'ipc' && percentual > 0) {
+        finalCost = baseCost * (100 / percentual);
       }
-      custoInput.value = cost.toFixed(2);
-      console.log("Insumo cost updated:", cost.toFixed(2));
+      
+      custoInput.value = finalCost.toFixed(2);
+      console.log("Insumo cost updated:", finalCost.toFixed(2));
     } else {
       custoInput.value = "";
     }
   }
   
-  function updateCostReceita(formItem) {
-    var receitaSelect = formItem.querySelector('.receita-select');
-    var quantidadeInput = formItem.querySelector('.quantidade-input');
-    var unidadeSelect = formItem.querySelector('select[name$="-unidade"]');
-    var custoInput = formItem.querySelector('.custo-utilizada');
-    if (!receitaSelect || !quantidadeInput || !unidadeSelect || !custoInput) return;
-    var receitaId = receitaSelect.value;
-    var quantidade = parseFloat(quantidadeInput.value) || 0;
-    var selectedUnit = unidadeSelect.value.toLowerCase();
-    var receitaData = getReceitaDataById(receitaId);
-    if (receitaData) {
-      var precoKG = parseFloat(receitaData.preco_kg);
-      if (isNaN(precoKG)) {
-        precoKG = 0;
-      }
-      // Converter quantidade para kg se necessário
-      var qt_kg = (selectedUnit === 'g') ? (quantidade / 1000) : quantidade;
-      var cost = qt_kg * precoKG;
-      custoInput.value = cost.toFixed(2);
-      console.log("Receita cost updated:", cost.toFixed(2));
-    } else {
-      custoInput.value = "";
-    }
-  }
-  
+  // Atualiza os totais da Ficha Técnica
   function updateTotals() {
     var totalWeight = 0;
     var totalCostInsumos = 0;
     var totalCostReceitas = 0;
     
-    // Atualiza insumos
-    Array.prototype.forEach.call(document.querySelectorAll('#formset-container-insumos .formset-item'), function(item) {
+    // Para cada insumo
+    document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
       var quantidadeInput = item.querySelector('.quantidade-input');
       var insumoSelect = item.querySelector('.insumo-select');
       var unidadeSelect = item.querySelector('.unidade-select');
       var custoInput = item.querySelector('.custo-utilizada');
       if (!quantidadeInput || !insumoSelect || !unidadeSelect || !custoInput) return;
+      
       var quantidade = parseFloat(quantidadeInput.value) || 0;
-      var unidadeSelecionada = unidadeSelect.value.toLowerCase();
+      var unidadeSelecionada = unidadeSelect.value;
       var insumoData = getInsumoDataById(insumoSelect.value);
       if (insumoData) {
-        var base_unit = insumoData.unidade ? insumoData.unidade.toLowerCase() : "";
-        // Converter a quantidade para a unidade base
-        var converted = convertQuantity(quantidade, unidadeSelecionada, base_unit);
-        // Se a unidade base for 'kg', converte para gramas para somar o peso total
-        if (base_unit === 'kg') {
-          totalWeight += converted * 1000;
-        } else {
-          totalWeight += converted;
+        var converted = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+        var rawWeight = (insumoData.unidade.toLowerCase() === 'kg') ? converted * 1000 : converted;
+        
+        var ajusteTipo = getRadioValue(item, "-ajuste_tipo") || 'none';
+        var ajusteSinal = getRadioValue(item, "-ajuste_sinal") || 'mais';
+        var ajustePercentualEl = item.querySelector('.ajuste-percentual');
+        var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
+        var effectiveWeight = rawWeight;
+        if (ajusteTipo === 'ipc' && percentual > 0) {
+          effectiveWeight = rawWeight * (percentual / 100);
+        } else if (ajusteTipo === 'fator' && percentual > 0) {
+          effectiveWeight = (ajusteSinal === 'mais') ? rawWeight * (1 + percentual/100) : rawWeight * (1 - percentual/100);
         }
+        
+        totalWeight += effectiveWeight;
         totalCostInsumos += parseFloat(custoInput.value) || 0;
       }
     });
     
-    // Atualiza receitas (soma também o peso dos itens)
-    Array.prototype.forEach.call(document.querySelectorAll('#formset-container-receitas .formset-item'), function(item) {
+    // Para cada receita
+    document.querySelectorAll('#formset-container-receitas .formset-item').forEach(function(item) {
       var quantidadeInput = item.querySelector('.quantidade-input');
       var receitaSelect = item.querySelector('.receita-select');
       var unidadeSelect = item.querySelector('select[name$="-unidade"]');
       var custoInput = item.querySelector('.custo-utilizada');
       if (!quantidadeInput || !receitaSelect || !unidadeSelect || !custoInput) return;
+      
       var quantidade = parseFloat(quantidadeInput.value) || 0;
-      var selectedUnit = unidadeSelect.value.toLowerCase();
+      var selectedUnit = unidadeSelect.value;
       var receitaData = getReceitaDataById(receitaSelect.value);
       if (receitaData) {
-        // Para o custo, converte para kg se necessário
-        var qt_kg = (selectedUnit === 'g') ? (quantidade / 1000) : quantidade;
-        totalCostReceitas += (qt_kg * parseFloat(receitaData.preco_kg)) || 0;
-        // Para o peso, assume que a quantidade inserida é o peso (converte para gramas se for kg)
-        var weight_receita = (selectedUnit === 'g') ? quantidade : quantidade * 1000;
-        totalWeight += weight_receita;
+        var qt_kg = (selectedUnit.toLowerCase() === 'g') ? (quantidade / 1000) : quantidade;
+        totalCostReceitas += qt_kg * parseFloat(receitaData.preco_kg);
+        var porcao = parseFloat(receitaData.porcao_sugerida) || 0;
+        var pesoReceita = parseFloat(receitaData.peso_total) || 0;
+        var used_quantity = (selectedUnit.toLowerCase() === 'g') ? quantidade : quantidade * 1000;
+        if (porcao > 0) {
+          var effective_weight_recipe = (used_quantity / porcao) * pesoReceita;
+          totalWeight += effective_weight_recipe;
+        }
       }
     });
     
     document.getElementById("pesoTotal").value = totalWeight.toFixed(2);
     document.getElementById("custoTotal").value = (totalCostInsumos + totalCostReceitas).toFixed(2);
     
-    // Corrigindo a leitura do fator de correção: envolvendo-o em aspas
-    var fatorCorr = parseFloat("{{ restaurante.fator_correcao_financeiro|default:'1.00' }}");
+    var fatorCorr = parseFloat({{ restaurante.fator_correcao_financeiro|default:"1.00" }});
     var valorVenda = (totalCostInsumos + totalCostReceitas) * fatorCorr;
     document.getElementById("valorVendaSugerida").value = valorVenda.toFixed(2);
     
-    var porcaoInput = document.querySelector("input[name='porcao_sugerida']");
-    var porcao = porcaoInput ? (parseFloat(porcaoInput.value) || 0) : 0;
-    var rendimentoInput = document.getElementById("rendimento");
-    if (porcao > 0) {
-      var rendimento = totalWeight / porcao;
-      rendimentoInput.value = rendimento.toFixed(1);
-    } else {
-      rendimentoInput.value = "";
-    }
     console.log("Totals updated: Weight =", totalWeight.toFixed(2), "Cost Insumos =", totalCostInsumos.toFixed(2), "Cost Receitas =", totalCostReceitas.toFixed(2));
   }
   
+  // Liga os eventos aos itens do formset
   function bindEvents(item, type) {
     if (type === "insumo") {
-      var insumoSelect = item.querySelector('.insumo-select');
-      var quantidadeInput = item.querySelector('.quantidade-input');
-      var unidadeSelect = item.querySelector('.unidade-select');
-      if (insumoSelect && quantidadeInput && unidadeSelect) {
-        insumoSelect.addEventListener('change', function() {
-          updateCostInsumo(item);
-          updateTotals();
-        });
-        quantidadeInput.addEventListener('keyup', function() {
-          updateCostInsumo(item);
-          updateTotals();
-        });
-        unidadeSelect.addEventListener('change', function() {
-          updateCostInsumo(item);
-          updateTotals();
-        });
-      }
+      var elements = item.querySelectorAll('.insumo-select, .quantidade-input, .unidade-select, .ajuste-tipo, .ajuste-sinal, .ajuste-percentual');
+      elements.forEach(function(el) {
+        if (!el) return;
+        el.addEventListener('change', function() { updateCostInsumo(item); updateTotals(); });
+        el.addEventListener('keyup', function() { updateCostInsumo(item); updateTotals(); });
+      });
     } else if (type === "receita") {
       var receitaSelect = item.querySelector('.receita-select');
       var quantidadeInput = item.querySelector('.quantidade-input');
       var unidadeSelect = item.querySelector('select[name$="-unidade"]');
       if (receitaSelect && quantidadeInput && unidadeSelect) {
-        receitaSelect.addEventListener('change', function() {
-          updateCostReceita(item);
-          updateTotals();
-        });
-        quantidadeInput.addEventListener('keyup', function() {
-          updateCostReceita(item);
-          updateTotals();
-        });
-        unidadeSelect.addEventListener('change', function() {
-          updateCostReceita(item);
-          updateTotals();
-        });
+        receitaSelect.addEventListener('change', function() { updateTotals(); });
+        quantidadeInput.addEventListener('keyup', function() { updateTotals(); });
+        unidadeSelect.addEventListener('change', function() { updateTotals(); });
       }
     }
   }
   
-  // Bind events para os formsets iniciais
-  Array.prototype.forEach.call(document.querySelectorAll('#formset-container-insumos .formset-item'), function(item) {
+  document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
     bindEvents(item, "insumo");
   });
-  Array.prototype.forEach.call(document.querySelectorAll('#formset-container-receitas .formset-item'), function(item) {
+  document.querySelectorAll('#formset-container-receitas .formset-item').forEach(function(item) {
     bindEvents(item, "receita");
   });
   
   var addInsumoButton = document.getElementById("addInsumo");
   var formsetContainerInsumos = document.getElementById("formset-container-insumos");
   var totalFormsInsumos = document.querySelector('input[name^="insumos-TOTAL_FORMS"]');
-  
   addInsumoButton.addEventListener("click", function(e) {
     e.preventDefault();
     if (!totalFormsInsumos) return;
@@ -410,7 +448,6 @@ document.addEventListener("DOMContentLoaded", function() {
   var addReceitaButton = document.getElementById("addReceita");
   var formsetContainerReceitas = document.getElementById("formset-container-receitas");
   var totalFormsReceitas = document.querySelector('input[name^="receitas-TOTAL_FORMS"]');
-  
   addReceitaButton.addEventListener("click", function(e) {
     e.preventDefault();
     if (!totalFormsReceitas) return;
@@ -426,7 +463,6 @@ document.addEventListener("DOMContentLoaded", function() {
     updateTotals();
   });
   
-  // Remoção de itens
   document.addEventListener("click", function(e) {
     var removeBtn = e.target.closest(".remove-item");
     if (removeBtn) {
@@ -449,4 +485,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
-
+{% endblock %}
