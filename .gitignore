@@ -1,0 +1,20 @@
+# Arquivos compilados Python
+*.pyc
+__pycache__/
+
+# Arquivos de banco de dados SQLite
+db.sqlite3
+
+# Arquivos de mídia e estáticos
+media/
+staticfiles/
+
+# Ambiente virtual Python
+venv/
+
+# Arquivos do VS Code (opcional)
+.vscode/
+
+# Arquivos de ambiente (sensível)
+.env
+
