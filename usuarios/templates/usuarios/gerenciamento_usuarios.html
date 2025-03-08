@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Gerenciamento de Usuários{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Gerenciamento de Usuários</h2>
+  
+  <!-- Botão para criar novo usuário -->
+  <div class="mb-3 text-right">
+    <a href="{% url 'usuarios:cadastrar_usuario' %}" class="btn btn-success">
+      <i class="fas fa-plus"></i> Novo Usuário
+    </a>
+  </div>
+
+  <!-- Tabela de usuários -->
+  <div class="card">
+    <div class="card-header bg-secondary text-white">
+      Lista de Usuários
+    </div>
+    <div class="card-body">
+      {% if usuarios %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Tipo</th>
+            <th>Restaurante</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for usuario in usuarios %}
+          <tr>
+            <td>{{ usuario.username }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.get_role_display }}</td>
+            <td>
+              {% if usuario.restaurante %}
+                {{ usuario.restaurante.nome_restaurante }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'usuarios:editar_usuario' usuario.id %}" class="btn btn-sm btn-primary">Editar</a>
+              <a href="{% url 'usuarios:excluir_usuario' usuario.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p>Nenhum usuário encontrado.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

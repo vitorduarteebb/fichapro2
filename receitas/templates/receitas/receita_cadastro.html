@@ -4,8 +4,14 @@
 {% block title %}Cadastro de Receita{% endblock %}
 
 {% block content %}
-<!-- Estilos conforme o design original (Dark Mode com toques laranja) -->
+<!-- Bootstrap 4 CDN para grid e tooltips -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <style>
+  /* Estilos Gerais */
   body {
     background-color: #121212;
     color: #e0e0e0;
@@ -26,137 +32,95 @@
     margin-bottom: 2rem;
     color: #ff9900;
   }
+  /* Cartões */
   .card {
     background-color: #1e1e1e;
     border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.8);
     margin-bottom: 2rem;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.9);
   }
   .card-header {
     padding: 15px 20px;
     font-size: 1.25rem;
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     background: linear-gradient(135deg, #ff9900, #ff6600);
     color: #121212;
   }
   .card-body {
     padding: 20px;
   }
+  /* Formulários */
   label {
     font-weight: 600;
-    margin-bottom: 5px;
-    display: block;
+    margin-bottom: 2px;
     color: #e0e0e0;
   }
+  .mb-0 { margin-bottom: 0 !important; }
   .form-control {
-    background-color: #2a2a2a;
+    background-color: #fff;
     border: 1px solid #444;
-    border-radius: 8px;
-    padding: 10px;
-    color: #e0e0e0;
-    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 4px;
+    padding: 8px;
+    color: #000;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
   .form-control:focus {
-    background-color: #333;
+    background-color: #eee;
     border-color: #ff9900;
-    box-shadow: 0 0 8px rgba(255, 153, 0, 0.5);
+    box-shadow: 0 0 8px rgba(255,153,0,0.5);
     outline: none;
   }
+  ::placeholder { color: #000; opacity: 1; }
+  
+  /* Bloco de ajuste: Contém "Sinal" e "%" */
+  .collapse-adjust { display: none; }
+  .ajuste-sinal-wrapper { display: none; }
+  
+  /* Botões */
   .btn {
-    border-radius: 8px;
+    border-radius: 4px;
     transition: background-color 0.3s ease, transform 0.2s ease;
     font-weight: 600;
   }
-  .btn:hover {
-    transform: scale(1.05);
-  }
-  .btn-primary {
-    background-color: #ff9900;
-    border: none;
-    color: #121212;
-  }
-  .btn-secondary {
-    background-color: #ff6600;
-    border: none;
-    color: #fff;
-  }
-  .btn-danger {
-    background-color: #ff3366;
-    border: none;
-    color: #fff;
-  }
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    margin: -10px;
-  }
-  .row > [class*="col-"] {
-    padding: 10px;
-  }
-  .formset-item {
-    animation: fadeInUp 0.5s ease both;
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .icon {
-    margin-right: 8px;
-    color: #ff9900;
-  }
+  .btn:hover { transform: scale(1.05); }
+  .btn-primary { background-color: #ff9900; border: none; color: #121212; }
+  .btn-secondary { background-color: #ff6600; border: none; color: #fff; }
+  .btn-danger { background-color: #ff3366; border: none; color: #fff; }
   .btn-light {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255,255,255,0.1);
     border: 1px solid #fff;
     color: #fff;
   }
-  .btn-light:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  .profile-upload {
-    margin-bottom: 2rem;
-  }
-  .profile-img-preview {
-    text-align: center;
-  }
-  .profile-img-preview img {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 4px solid #ff9900;
-  }
-  .file-input-wrapper {
-    text-align: center;
-    margin-top: 10px;
-  }
+  .btn-light:hover { background-color: rgba(255,255,255,0.2); }
+  
+  .remove-item { margin-top: 30px; }
 </style>
 
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
 <div class="container mt-4">
-  <h2><i class="fas fa-file-alt icon"></i>Cadastro de Receita para {{ restaurante.nome_restaurante }}</h2>
+  <h2>
+    <i class="fas fa-file-alt mr-2"></i>
+    Cadastro de Receita para {{ restaurante.nome_restaurante }}
+  </h2>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     
     <!-- Dados da Receita -->
     <div class="card mb-3">
-      <div class="card-header"><i class="fas fa-info-circle icon"></i>Dados da Receita</div>
+      <div class="card-header">
+        <i class="fas fa-info-circle mr-2"></i> Dados da Receita
+      </div>
       <div class="card-body">
-        <div class="profile-upload mb-4">
-          <div class="profile-img-preview">
-            <img id="profilePreview" src="{% static 'images/default_profile.png' %}" alt="Foto de Perfil">
-          </div>
-          <div class="file-input-wrapper">
+        <div class="text-center mb-4">
+          <img id="profilePreview" src="{% static 'images/default_profile.png' %}" alt="Foto de Perfil" class="rounded-circle" style="width:150px; height:150px; object-fit:cover; border:4px solid #ff9900;">
+          <div class="mt-2">
             <label for="id_imagem" class="btn btn-secondary">
-              <i class="fas fa-camera icon"></i> Alterar Foto
+              <i class="fas fa-camera mr-1"></i>Alterar Foto
             </label>
             {{ form.imagem }}
           </div>
@@ -166,7 +130,11 @@
           {% if field.name != "imagem" %}
             <div class="form-group">
               {{ field.label_tag }}
-              {{ field|add_class:"form-control" }}
+              {% if field.name == "nome_prato" %}
+                {{ field|add_class:"form-control"|attr:"placeholder:Nome do prato"|attr:"value:" }}
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
               {{ field.errors }}
             </div>
           {% endif %}
@@ -177,7 +145,7 @@
     <!-- Insumos Utilizados -->
     <div class="card mb-3">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-boxes icon"></i>Insumos Utilizados</span>
+        <span><i class="fas fa-boxes mr-2"></i> Insumos Utilizados</span>
         <button type="button" class="btn btn-light btn-sm" id="addInsumo" title="Adicionar Insumo">
           <i class="fas fa-plus"></i>
         </button>
@@ -186,36 +154,43 @@
         {{ formset_insumos.management_form }}
         <div id="formset-container-insumos">
           {% for form in formset_insumos %}
-          <div class="row mb-2 formset-item">
+          <div class="form-row align-items-end mb-2 formset-item">
             <div class="col-md-3">
-              {{ form.insumo.label_tag }}
+              <label class="mb-0">Insumo</label>
               {{ form.insumo|add_class:"form-control insumo-select" }}
             </div>
             <div class="col-md-2">
-              {{ form.quantidade_utilizada.label_tag }}
+              <label class="mb-0">Qtd Utilizada</label>
               {{ form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
             </div>
-            <div class="col-md-2">
-              {{ form.unidade.label_tag }}
+            <div class="col-md-1">
+              <label class="mb-0">Unid</label>
               {{ form.unidade|add_class:"form-control unidade-select" }}
             </div>
             <div class="col-md-2">
-              <label>Ajuste Tipo</label>
+              <label class="mb-0">
+                Ajuste Tipo 
+                <i class="fas fa-info-circle text-info" data-toggle="tooltip" data-placement="top" title="IC: Índice de Cocção. IPC: Índice de Partes Comestíveis."></i>
+              </label>
               {{ form.ajuste_tipo }}
             </div>
-            <div class="col-md-1">
-              <label>Ajuste Sinal</label>
-              {{ form.ajuste_sinal }}
+            <div class="col-md-2 collapse-adjust">
+              <div class="form-row">
+                <div class="col ajuste-sinal-wrapper">
+                  <label class="mb-0">Sinal</label>
+                  {{ form.ajuste_sinal }}
+                </div>
+                <div class="col">
+                  <label class="mb-0">%</label>
+                  {{ form.ajuste_percentual|add_class:"form-control" }}
+                </div>
+              </div>
             </div>
             <div class="col-md-1">
-              <label>% / Parte</label>
-              {{ form.ajuste_percentual }}
-            </div>
-            <div class="col-md-1">
-              <label>Custo (R$)</label>
+              <label class="mb-0">Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
-            <div class="col-md-1">
+            <div class="col-md-1 text-center">
               <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
                 <i class="fas fa-trash"></i>
               </button>
@@ -225,36 +200,43 @@
         </div>
         <!-- Template para novo insumo -->
         <script type="text/template" id="empty-form-template-insumos">
-          <div class="row mb-2 formset-item">
+          <div class="form-row align-items-end mb-2 formset-item">
             <div class="col-md-3">
-              {{ formset_insumos.empty_form.insumo.label_tag }}
+              <label class="mb-0">Insumo</label>
               {{ formset_insumos.empty_form.insumo|add_class:"form-control insumo-select" }}
             </div>
             <div class="col-md-2">
-              {{ formset_insumos.empty_form.quantidade_utilizada.label_tag }}
+              <label class="mb-0">Qtd Utilizada</label>
               {{ formset_insumos.empty_form.quantidade_utilizada|add_class:"form-control quantidade-input" }}
             </div>
-            <div class="col-md-2">
-              {{ formset_insumos.empty_form.unidade.label_tag }}
+            <div class="col-md-1">
+              <label class="mb-0">Unid</label>
               {{ formset_insumos.empty_form.unidade|add_class:"form-control unidade-select" }}
             </div>
             <div class="col-md-2">
-              <label>Ajuste Tipo</label>
+              <label class="mb-0">
+                Ajuste Tipo 
+                <i class="fas fa-info-circle text-info" data-toggle="tooltip" data-placement="top" title="IC: Índice de Cocção. IPC: Índice de Partes Comestíveis."></i>
+              </label>
               {{ formset_insumos.empty_form.ajuste_tipo }}
             </div>
-            <div class="col-md-1">
-              <label>Ajuste Sinal</label>
-              {{ formset_insumos.empty_form.ajuste_sinal }}
+            <div class="col-md-2 collapse-adjust">
+              <div class="form-row">
+                <div class="col ajuste-sinal-wrapper">
+                  <label class="mb-0">Sinal</label>
+                  {{ formset_insumos.empty_form.ajuste_sinal }}
+                </div>
+                <div class="col">
+                  <label class="mb-0">%</label>
+                  {{ formset_insumos.empty_form.ajuste_percentual|add_class:"form-control" }}
+                </div>
+              </div>
             </div>
             <div class="col-md-1">
-              <label>% / Parte</label>
-              {{ formset_insumos.empty_form.ajuste_percentual }}
-            </div>
-            <div class="col-md-1">
-              <label>Custo (R$)</label>
+              <label class="mb-0">Custo (R$)</label>
               <input type="text" class="form-control custo-utilizada" readonly>
             </div>
-            <div class="col-md-1">
+            <div class="col-md-1 text-center">
               <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover Insumo">
                 <i class="fas fa-trash"></i>
               </button>
@@ -267,20 +249,20 @@
     <!-- Totais da Receita -->
     <div class="card mb-3">
       <div class="card-header bg-dark text-white">
-        <i class="fas fa-calculator icon"></i> Totais da Receita
+        <i class="fas fa-calculator mr-2"></i> Totais da Receita
       </div>
       <div class="card-body">
-        <div class="row">
+        <div class="form-row">
           <div class="col-md-4">
-            <label>Peso Total (g):</label>
+            <label class="mb-0">Peso Total (g):</label>
             <input type="text" id="pesoTotal" class="form-control" readonly>
           </div>
           <div class="col-md-4">
-            <label>Custo Total (R$):</label>
+            <label class="mb-0">Custo Total (R$):</label>
             <input type="text" id="custoTotal" class="form-control" readonly>
           </div>
           <div class="col-md-4">
-            <label>Preço do KG (R$):</label>
+            <label class="mb-0">Preço do KG (R$):</label>
             <input type="text" id="precoKg" class="form-control" readonly>
           </div>
         </div>
@@ -291,181 +273,222 @@
   </form>
 </div>
 
+<!-- JAVASCRIPT -->
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-// Função auxiliar para obter o valor selecionado de um grupo de radios
-function getRadioValue(container, nameSuffix) {
-  var radio = container.querySelector('input[name$="' + nameSuffix + '"]:checked');
-  if (radio) return radio.value;
-  var select = container.querySelector('select[name$="' + nameSuffix + '"]');
-  if (select) return select.value;
-  return null;
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-  // Preview da imagem
-  const imagemInput = document.getElementById("id_imagem");
-  const profilePreview = document.getElementById("profilePreview");
-  if (imagemInput) {
-    imagemInput.style.display = "none";
-    imagemInput.addEventListener("change", function(event) {
-      const file = event.target.files[0];
-      if(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { profilePreview.src = e.target.result; }
-        reader.readAsDataURL(file);
+  // Inicializa os tooltips do Bootstrap
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+  
+  // Função para obter o valor selecionado (radios ou selects)
+  function getRadioValue(container, nameSuffix) {
+    var radio = container.querySelector("input[type='radio'][name*='" + nameSuffix + "']:checked");
+    return radio ? radio.value : null;
+  }
+  
+  // Atualiza a visibilidade do bloco de ajuste conforme o valor do "ajuste_tipo"
+  function updateSinalVisibility(formItem) {
+    var ajusteTipo = (getRadioValue(formItem, "-ajuste_tipo") || 'none').toLowerCase();
+    console.log("updateSinalVisibility - ajusteTipo:", ajusteTipo);
+    var collapseContainer = formItem.querySelector(".collapse-adjust");
+    if (collapseContainer) {
+      if (ajusteTipo === 'fc') {
+        collapseContainer.style.display = "flex"; // usa flex para manter o grid
+        var sinalWrapper = formItem.querySelector(".ajuste-sinal-wrapper");
+        if (sinalWrapper) {
+          sinalWrapper.style.display = "block";
+        }
+      } else if (ajusteTipo === 'ipc') {
+        collapseContainer.style.display = "flex";
+        var sinalWrapper = formItem.querySelector(".ajuste-sinal-wrapper");
+        if (sinalWrapper) {
+          sinalWrapper.style.display = "none";
+        }
+      } else {
+        collapseContainer.style.display = "none";
       }
-    });
-  }
-  
-  var insumosData = {{ insumos_json|default:"[]"|safe }};
-  
-  function getInsumoDataById(id) {
-    return insumosData.find(function(insumo) {
-      return parseInt(insumo.id) === parseInt(id);
-    }) || null;
-  }
-  
-  function convertQuantity(value, fromUnit, toUnit) {
-    if (fromUnit === toUnit) return value;
-    if (fromUnit === 'kg' && toUnit === 'g') return value * 1000;
-    if (fromUnit === 'g' && toUnit === 'kg') return value / 1000;
-    return value;
-  }
-  
-  function updateCostInsumo(formItem) {
-    var insumoSelect = formItem.querySelector('.insumo-select');
-    var quantidadeInput = formItem.querySelector('.quantidade-input');
-    var unidadeSelect = formItem.querySelector('.unidade-select');
-    var custoInput = formItem.querySelector('.custo-utilizada');
-    if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) return;
-    
-    var insumoId = insumoSelect.value;
-    var quantidade = parseFloat(quantidadeInput.value) || 0;
-    var unidadeSelecionada = unidadeSelect.value;
-    var insumoData = getInsumoDataById(insumoId);
-    
-    if (insumoData) {
-      var insumoPrice = parseFloat(insumoData.preco);
-      var baseQuantity = parseFloat(insumoData.quantidade) || 1;
-      var convertedQuantity = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
-      var baseCost = (convertedQuantity * insumoPrice) / baseQuantity;
-      var finalCost = baseCost;
-      
-      var ajusteTipo = getRadioValue(formItem, "-ajuste_tipo") || 'none';
-      var ajusteSinal = getRadioValue(formItem, "-ajuste_sinal") || 'mais';
-      var ajustePercentualEl = formItem.querySelector('input[name$="-ajuste_percentual"]');
-      var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
-      
-      if (ajusteTipo === 'fc' && percentual > 0) {
-        finalCost = baseCost * (ajusteSinal === 'mais' ? (1 + percentual/100) : (1 - percentual/100));
-      } else if (ajusteTipo === 'ipc' && percentual > 0) {
-        finalCost = baseCost * (100 / percentual);
-      }
-      
-      custoInput.value = finalCost.toFixed(2);
-    } else {
-      custoInput.value = "";
     }
   }
   
-  function updateTotals() {
-    var totalWeight = 0;
-    var totalCost = 0;
-    document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
-      var quantidadeInput = item.querySelector('.quantidade-input');
-      var insumoSelect = item.querySelector('.insumo-select');
-      var unidadeSelect = item.querySelector('.unidade-select');
-      var custoInput = item.querySelector('.custo-utilizada');
-      if (!quantidadeInput || !insumoSelect || !unidadeSelect || !custoInput) return;
+  document.addEventListener("DOMContentLoaded", function() {
+    // Preview da imagem
+    const imagemInput = document.getElementById("id_imagem");
+    const profilePreview = document.getElementById("profilePreview");
+    if (imagemInput) {
+      imagemInput.style.display = "none";
+      imagemInput.addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) { profilePreview.src = e.target.result; }
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+    
+    var insumosData = {{ insumos_json|default:"[]"|safe }};
+    
+    function getInsumoDataById(id) {
+      return insumosData.find(function(insumo) {
+        return parseInt(insumo.id) === parseInt(id);
+      }) || null;
+    }
+    
+    function convertQuantity(value, fromUnit, toUnit) {
+      const conversionTable = {
+        'kg': { 'g': 1000, 'kg': 1 },
+        'g': { 'kg': 0.001, 'g': 1 },
+        'L': { 'mL': 1000, 'L': 1 },
+        'mL': { 'L': 0.001, 'mL': 1 },
+        'un': { 'un': 1 }
+      };
+      if (conversionTable[fromUnit] && conversionTable[fromUnit][toUnit]) {
+        return value * conversionTable[fromUnit][toUnit];
+      }
+      return value;
+    }
+    
+    function updateCostInsumo(formItem) {
+      var insumoSelect = formItem.querySelector('.insumo-select');
+      var quantidadeInput = formItem.querySelector('.quantidade-input');
+      var unidadeSelect = formItem.querySelector('.unidade-select');
+      var custoInput = formItem.querySelector('.custo-utilizada');
+      if (!insumoSelect || !quantidadeInput || !unidadeSelect || !custoInput) return;
       
+      var insumoId = insumoSelect.value;
       var quantidade = parseFloat(quantidadeInput.value) || 0;
       var unidadeSelecionada = unidadeSelect.value;
-      var insumoData = getInsumoDataById(insumoSelect.value);
+      var insumoData = getInsumoDataById(insumoId);
       if (insumoData) {
-        var converted = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
-        var rawWeight = 0;
-        if (insumoData.unidade.toLowerCase() === 'kg') {
-          rawWeight = converted * 1000;
-        } else {
-          rawWeight = converted;
-        }
+        var insumoPrice = parseFloat(insumoData.preco);
+        var baseQuantity = parseFloat(insumoData.quantidade) || 1;
+        var convertedQuantity = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+        var baseCost = (convertedQuantity * insumoPrice) / baseQuantity;
+        var finalCost = baseCost;
         
-        var ajusteTipo = getRadioValue(item, "-ajuste_tipo") || 'none';
-        var ajustePercentualEl = item.querySelector('input[name$="-ajuste_percentual"]');
+        var ajusteTipo = (getRadioValue(formItem, "-ajuste_tipo") || 'none').toLowerCase();
+        var ajusteSinal = (getRadioValue(formItem, "-ajuste_sinal") || 'mais').toLowerCase();
+        var ajustePercentualEl = formItem.querySelector('input[name$="-ajuste_percentual"]');
         var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
-        var effectiveWeight = rawWeight;
+        
+        if (ajusteTipo === 'fc' && percentual > 0) {
+          finalCost = (ajusteSinal === 'mais') ? baseCost / (1 + percentual / 100)
+                                               : baseCost * (1 + percentual / 100);
+        }
         if (ajusteTipo === 'ipc' && percentual > 0) {
-          effectiveWeight = rawWeight * (percentual / 100);
-        } else if (ajusteTipo === 'fc' && percentual > 0) {
-          var ajusteSinal = getRadioValue(item, "-ajuste_sinal") || 'mais';
-          if (ajusteSinal === 'mais') {
-            effectiveWeight = rawWeight * (1 + percentual/100);
-          } else if (ajusteSinal === 'menos') {
-            effectiveWeight = rawWeight * (1 - percentual/100);
-          }
+          finalCost = finalCost / (percentual / 100);
         }
         
-        totalWeight += effectiveWeight;
-        totalCost += parseFloat(custoInput.value) || 0;
-      }
-    });
-    document.getElementById("pesoTotal").value = totalWeight.toFixed(2);
-    document.getElementById("custoTotal").value = totalCost.toFixed(2);
-    var precoKg = totalWeight > 0 ? totalCost / (totalWeight / 1000) : 0;
-    document.getElementById("precoKg").value = precoKg.toFixed(2);
-  }
-  
-  function bindEvents(item) {
-    var elements = item.querySelectorAll('.insumo-select, .quantidade-input, .unidade-select, input[name$="-ajuste_percentual"]');
-    elements.forEach(function(el) {
-      el.addEventListener('change', function() { updateCostInsumo(item); updateTotals(); });
-      el.addEventListener('keyup', function() { updateCostInsumo(item); updateTotals(); });
-    });
-    var radios = item.querySelectorAll('input[type="radio"]');
-    radios.forEach(function(radio) {
-      radio.addEventListener('change', function() { updateCostInsumo(item); updateTotals(); });
-    });
-  }
-  
-  document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
-    bindEvents(item);
-  });
-  
-  var addInsumoButton = document.getElementById("addInsumo");
-  var formsetContainer = document.getElementById("formset-container-insumos");
-  var totalForms = document.querySelector('input[name^="insumos-TOTAL_FORMS"]');
-  addInsumoButton.addEventListener("click", function(e) {
-    e.preventDefault();
-    var currentCount = parseInt(totalForms.value);
-    var template = document.getElementById("empty-form-template-insumos").innerHTML;
-    var newFormHtml = template.replace(/__prefix__/g, currentCount);
-    var tempDiv = document.createElement("div");
-    tempDiv.innerHTML = newFormHtml;
-    var newItem = tempDiv.firstElementChild;
-    formsetContainer.appendChild(newItem);
-    totalForms.value = currentCount + 1;
-    bindEvents(newItem);
-    updateTotals();
-  });
-  
-  document.addEventListener("click", function(e) {
-    var removeBtn = e.target.closest(".remove-item");
-    if (removeBtn) {
-      e.preventDefault();
-      var item = removeBtn.closest(".formset-item");
-      var container = item.parentNode;
-      if (container.querySelectorAll(".formset-item").length > 1) {
-        item.remove();
-        totalForms.value = container.querySelectorAll(".formset-item").length;
-        updateTotals();
+        custoInput.value = finalCost.toFixed(2);
       } else {
-        alert("Pelo menos um item é obrigatório.");
+        custoInput.value = "";
       }
     }
+    
+    function updateTotals() {
+      var totalWeight = 0;
+      var totalCost = 0;
+      document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
+        var quantidadeInput = item.querySelector('.quantidade-input');
+        var insumoSelect = item.querySelector('.insumo-select');
+        var unidadeSelect = item.querySelector('.unidade-select');
+        var custoInput = item.querySelector('.custo-utilizada');
+        if (!quantidadeInput || !insumoSelect || !unidadeSelect || !custoInput) return;
+        
+        var quantidade = parseFloat(quantidadeInput.value) || 0;
+        var unidadeSelecionada = unidadeSelect.value;
+        var insumoData = getInsumoDataById(insumoSelect.value);
+        if (insumoData) {
+          var converted = convertQuantity(quantidade, unidadeSelecionada, insumoData.unidade.toLowerCase());
+          var rawWeight = (insumoData.unidade.toLowerCase() === 'kg') ? converted * 1000 : converted;
+          
+          var ajusteTipo = (getRadioValue(item, "-ajuste_tipo") || 'none').toLowerCase();
+          var ajusteSinal = (getRadioValue(item, "-ajuste_sinal") || 'mais').toLowerCase();
+          var ajustePercentualEl = item.querySelector('input[name$="-ajuste_percentual"]');
+          var percentual = ajustePercentualEl ? parseFloat(ajustePercentualEl.value) : 0;
+          var effectiveWeight = rawWeight;
+          
+          if (ajusteTipo === 'fc' && percentual > 0) {
+            effectiveWeight = (ajusteSinal === 'mais') ? rawWeight * (1 + percentual / 100)
+                                                       : rawWeight * (1 - percentual / 100);
+          }
+          if (ajusteTipo === 'ipc' && percentual > 0) {
+            effectiveWeight = effectiveWeight * (percentual / 100);
+          }
+          
+          totalWeight += effectiveWeight;
+          totalCost += parseFloat(custoInput.value) || 0;
+        }
+      });
+      document.getElementById("pesoTotal").value = totalWeight.toFixed(2);
+      document.getElementById("custoTotal").value = totalCost.toFixed(2);
+      var precoKg = totalWeight > 0 ? totalCost / (totalWeight / 1000) : 0;
+      document.getElementById("precoKg").value = precoKg.toFixed(2);
+    }
+    
+    function bindEvents(item) {
+      var elements = item.querySelectorAll('.insumo-select, .quantidade-input, .unidade-select, input[name$="-ajuste_percentual"]');
+      elements.forEach(function(el) {
+        el.addEventListener('change', function() { 
+          updateCostInsumo(item); 
+          updateTotals();
+          updateSinalVisibility(item);
+        });
+        el.addEventListener('keyup', function() { 
+          updateCostInsumo(item); 
+          updateTotals();
+        });
+      });
+      var radios = item.querySelectorAll('input[type="radio"]');
+      radios.forEach(function(radio) {
+        radio.addEventListener('change', function() { 
+          updateCostInsumo(item); 
+          updateTotals();
+          updateSinalVisibility(item);
+        });
+      });
+      updateSinalVisibility(item);
+    }
+    
+    document.querySelectorAll('#formset-container-insumos .formset-item').forEach(function(item) {
+      bindEvents(item);
+    });
+    
+    var addInsumoButton = document.getElementById("addInsumo");
+    var formsetContainer = document.getElementById("formset-container-insumos");
+    var totalForms = document.querySelector('input[name^="insumos-TOTAL_FORMS"]');
+    addInsumoButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      var currentCount = parseInt(totalForms.value);
+      var template = document.getElementById("empty-form-template-insumos").innerHTML;
+      var newFormHtml = template.replace(/__prefix__/g, currentCount);
+      var tempDiv = document.createElement("div");
+      tempDiv.innerHTML = newFormHtml;
+      var newItem = tempDiv.firstElementChild;
+      formsetContainer.appendChild(newItem);
+      totalForms.value = currentCount + 1;
+      bindEvents(newItem);
+      updateTotals();
+    });
+    
+    document.addEventListener("click", function(e) {
+      var removeBtn = e.target.closest(".remove-item");
+      if (removeBtn) {
+        e.preventDefault();
+        var item = removeBtn.closest(".formset-item");
+        var container = item.parentNode;
+        if (container.querySelectorAll(".formset-item").length > 1) {
+          item.remove();
+          totalForms.value = parseInt(totalForms.value) - 1;
+          updateTotals();
+        } else {
+          alert("Pelo menos um item é obrigatório.");
+        }
+      }
+    });
   });
-});
 </script>
 {% endblock %}
 {% endblock %}

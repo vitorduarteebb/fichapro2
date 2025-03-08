@@ -1,7 +1,20 @@
 from django.db import models
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from restaurante.models import Restaurante
 from receitas.models import Receita
+
+def calculate_final_cost_ficha(insumo, quantidade_utilizada, ajuste_tipo=None, ajuste_sinal='mais', ajuste_percentual=Decimal("0")):
+    base_cost = (quantidade_utilizada * insumo.preco) / Decimal(insumo.quantidade)
+    if ajuste_tipo == 'fc' and ajuste_percentual > 0:
+        if ajuste_sinal == 'mais':
+            return base_cost * (1 + ajuste_percentual / Decimal("100"))
+        else:
+            return base_cost * (1 - ajuste_percentual / Decimal("100"))
+    elif ajuste_tipo == 'ipc' and ajuste_percentual > 0:
+        # Se apenas X% do insumo é aproveitado, o custo aumenta proporcionalmente.
+        return base_cost * (Decimal("100") / ajuste_percentual)
+    else:
+        return base_cost
 
 class FichaTecnica(models.Model):
     restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='fichas_tecnicas')
@@ -26,7 +39,7 @@ class FichaTecnicaInsumo(models.Model):
     quantidade_utilizada = models.DecimalField("QUANTIDADE UTILIZADA", max_digits=10, decimal_places=2,
                                                  help_text="Informe a quantidade utilizada (na mesma unidade do insumo)")
     ajuste_tipo = models.CharField("TIPO DE AJUSTE", max_length=10, blank=True, null=True,
-                                   help_text="Informe 'fator' para FATOR DE CORREÇÃO IC ou 'ipc' para IPC")
+                                   help_text="Informe 'fc' para IC ou 'ipc' para IPC")
     ajuste_sinal = models.CharField("SINAL DO AJUSTE", max_length=10, blank=True, null=True,
                                     help_text="Informe 'mais' ou 'menos'")
     ajuste_percentual = models.DecimalField("PERCENTUAL DE AJUSTE (%)", max_digits=5, decimal_places=2, blank=True, null=True,
@@ -34,17 +47,14 @@ class FichaTecnicaInsumo(models.Model):
     custo_utilizado = models.DecimalField("CUSTO UTILIZADO (R$)", max_digits=10, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        from decimal import Decimal, ROUND_HALF_UP
         if self.insumo.preco and self.insumo.quantidade and self.quantidade_utilizada:
-            base_cost = (self.quantidade_utilizada * self.insumo.preco) / self.insumo.quantidade
-            final_cost = base_cost
-            if self.ajuste_tipo == 'fator' and self.ajuste_percentual:
-                if self.ajuste_sinal == 'mais':
-                    final_cost = base_cost * (1 + self.ajuste_percentual / Decimal("100"))
-                elif self.ajuste_sinal == 'menos':
-                    final_cost = base_cost * (1 - self.ajuste_percentual / Decimal("100"))
-            elif self.ajuste_tipo == 'ipc' and self.ajuste_percentual and self.ajuste_percentual != 0:
-                final_cost = base_cost / (self.ajuste_percentual / Decimal("100"))
+            final_cost = calculate_final_cost_ficha(
+                self.insumo,
+                self.quantidade_utilizada,
+                ajuste_tipo=self.ajuste_tipo if self.ajuste_tipo not in [None, '', 'none'] else None,
+                ajuste_sinal=self.ajuste_sinal or 'mais',
+                ajuste_percentual=self.ajuste_percentual or Decimal("0")
+            )
             self.custo_utilizado = final_cost.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         super().save(*args, **kwargs)
 
@@ -60,7 +70,6 @@ class FichaTecnicaReceita(models.Model):
     custo_utilizado = models.DecimalField("CUSTO UTILIZADO (R$)", max_digits=10, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        from decimal import Decimal, ROUND_HALF_UP
         if self.receita.preco_kg and self.quantidade_utilizada:
             if self.unidade.lower() == 'g':
                 qt_kg = self.quantidade_utilizada / Decimal("1000")

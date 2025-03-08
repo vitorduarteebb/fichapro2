@@ -16,6 +16,7 @@ class Restaurante(models.Model):
     inscricao_municipal = models.CharField("Inscrição Municipal", max_length=50, blank=True, null=True)
 
     # Campos para Pessoa Física (PF)
+    nome = models.CharField("Nome", max_length=150, blank=True, null=True)
     cpf = models.CharField("CPF", max_length=14, blank=True, null=True)
     rg = models.CharField("RG", max_length=20, blank=True, null=True)
 
@@ -23,7 +24,7 @@ class Restaurante(models.Model):
     email = models.EmailField("E-mail", blank=True, null=True)
     telefone = models.CharField("Telefone", max_length=20, blank=True, null=True)
 
-    # Endereço (campos obrigatórios: CEP, Endereço e Bairro)
+    # Endereço
     cep = models.CharField("CEP", max_length=9)
     endereco = models.CharField("Endereço", max_length=255)
     numero = models.CharField("Número", max_length=10, blank=True, null=True)
@@ -40,23 +41,15 @@ class Restaurante(models.Model):
         max_digits=10,
         decimal_places=2,
         default=1.00,
-        blank=True,  # Permite que o campo seja deixado em branco no formulário
+        blank=True,
         help_text="Utilize esse fator para ajustes na precificação (ex: 1.00 = sem alteração, 1.10 = +10%)"
     )
-
+    
+    # Novo campo para logo do restaurante
+    logo = models.ImageField("Logo", upload_to='restaurante/logos/', blank=True, null=True)
 
     def __str__(self):
         if self.tipo_pessoa == 'PJ':
             return self.nome_restaurante or 'Restaurante sem nome'
         else:
-            return self.cpf or 'Restaurante PF'
-
-
-class RestauranteFile(models.Model):
-    restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='arquivos')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    file = models.FileField(upload_to='restaurante_files/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.title if self.title else self.file.name
+            return self.nome or self.cpf or 'Restaurante PF'

@@ -1,17 +1,27 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+from restaurante.models import Restaurante
 
-class Usuario(AbstractUser):
-    # Evita conflito de acesso reverso com o modelo `auth.User`
-    groups = models.ManyToManyField(
-        Group,
-        related_name="usuario_groups",  # Definir um nome único
-        blank=True
+USER_ROLE_CHOICES = (
+    ('standard', 'Standard'),
+    ('master', 'Master'),
+    ('admin', 'Admin'),
+)
+
+class CustomUser(AbstractUser):
+    role = models.CharField(
+        max_length=10,
+        choices=USER_ROLE_CHOICES,
+        default='standard',
+        verbose_name="Tipo de Usuário"
     )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name="usuario_permissions",  # Definir um nome único
-        blank=True
+    restaurante = models.ForeignKey(
+        Restaurante,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Restaurante Vinculado",
+        help_text="Vincule o usuário a um restaurante (apenas para Standard e Master)"
     )
 
     def __str__(self):

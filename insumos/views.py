@@ -1,19 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 import xml.etree.ElementTree as ET
 from django.forms import modelformset_factory
 from django.db import IntegrityError
-
+from django.core.exceptions import PermissionDenied
 from .models import Insumo
 from .forms import ImportXMLForm, InsumoForm, ImportInsumoForm, BaseInsumoFormSet
 from restaurante.models import Restaurante
 
 def detalhe_insumo(request, insumo_id):
     insumo = get_object_or_404(Insumo, pk=insumo_id)
-    return render(request, 'insumos/detalhe_insumo.html', {'insumo': insumo})
+    # Apenas Master e Admin verão os valores sensíveis (como preço, quantidade, peso)
+    show_values = request.user.role in ['admin', 'master']
+    return render(request, 'insumos/detalhe_insumo.html', {
+        'insumo': insumo,
+        'show_values': show_values
+    })
 
 def import_insumos(request, restaurante_id):
+    # Apenas Admin pode importar insumos.
+    if request.user.role != 'admin':
+        raise PermissionDenied("Você não tem permissão para importar insumos.")
     restaurante = get_object_or_404(Restaurante, pk=restaurante_id)
     if request.method == 'POST' and request.FILES.getlist('xml_file'):
         form = ImportXMLForm(request.POST, request.FILES)
@@ -32,8 +40,10 @@ def import_insumos(request, restaurante_id):
                             elem.tag = elem.tag.split('}', 1)[1]
                 except Exception as e:
                     form.add_error('xml_file', f"Erro ao ler o arquivo XML: {e}")
-                    return render(request, "insumos/import_insumos.html", {"form": form, "restaurante": restaurante})
-                
+                    return render(request, "insumos/import_insumos.html", {
+                        "form": form,
+                        "restaurante": restaurante
+                    })
                 for det in root.findall(".//det"):
                     prod = det.find("prod")
                     if prod is not None:
@@ -71,9 +81,15 @@ def import_insumos(request, restaurante_id):
             return redirect(reverse('insumos:confirmar_import_insumos'))
     else:
         form = ImportXMLForm()
-    return render(request, "insumos/import_insumos.html", {"form": form, "restaurante": restaurante})
+    return render(request, "insumos/import_insumos.html", {
+        "form": form,
+        "restaurante": restaurante
+    })
 
 def confirmar_import_insumos(request):
+    # Apenas Admin pode confirmar a importação.
+    if request.user.role != 'admin':
+        raise PermissionDenied("Você não tem permissão para confirmar a importação de insumos.")
     restaurante_id = request.session.get('import_restaurante_id')
     restaurante = get_object_or_404(Restaurante, pk=restaurante_id)
     insumos_data = request.session.get('insumos_import_data', [])
@@ -143,6 +159,9 @@ def confirmar_import_insumos(request):
     })
 
 def cadastro_insumo(request, restaurante_id):
+    # Apenas Admin pode cadastrar insumos.
+    if request.user.role != 'admin':
+        raise PermissionDenied("Você não tem permissão para cadastrar insumos.")
     restaurante = get_object_or_404(Restaurante, pk=restaurante_id)
     if request.method == 'POST':
         form = InsumoForm(request.POST)
@@ -157,15 +176,23 @@ def cadastro_insumo(request, restaurante_id):
 
 def lista_insumos(request):
     insumos = Insumo.objects.all()
-    return render(request, "insumos/lista_insumos.html", {"insumos": insumos})
+    # Standard vê apenas uma versão “resumida” (sem dados sensíveis), Master e Admin veem os valores.
+    show_values = request.user.role in ['admin', 'master']
+    return render(request, "insumos/lista_insumos.html", {"insumos": insumos, "show_values": show_values})
 
 def excluir_insumo(request, pk):
+    # Apenas Admin pode excluir insumos.
+    if request.user.role != 'admin':
+        raise PermissionDenied("Você não tem permissão para excluir insumos.")
     insumo = get_object_or_404(Insumo, pk=pk)
     restaurante_id = insumo.restaurante.id
     insumo.delete()
     return redirect('restaurante:restaurante_detail', pk=restaurante_id)
 
 def editar_insumo(request, insumo_id):
+    # Apenas Admin pode editar insumos.
+    if request.user.role != 'admin':
+        raise PermissionDenied("Você não tem permissão para editar insumos.")
     insumo = get_object_or_404(Insumo, pk=insumo_id)
     restaurante = insumo.restaurante
     if request.method == 'POST':

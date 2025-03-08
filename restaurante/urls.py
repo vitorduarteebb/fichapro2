@@ -10,4 +10,5 @@ urlpatterns = [
     path('editar/<int:pk>/', views.restaurante_edit, name='restaurante_edit'),
     path('excluir/<int:pk>/', views.excluir_restaurante, name='excluir_restaurante'),
     path('dashboard/<int:pk>/', views.visualizacao_dashboard, name='dashboard'),
+    path('restaurante/<int:pk>/upload_logo/', views.upload_logo, name='upload_logo'),
 ]

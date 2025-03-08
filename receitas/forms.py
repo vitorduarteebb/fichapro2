@@ -4,7 +4,7 @@ from .models import Receita, ReceitaInsumo
 
 AJUSTE_CHOICES = (
     ('none', 'Sem ajuste'),
-    ('fc', 'FATOR DE CORREÇÃO IC'),
+    ('fc', 'IC'),
     ('ipc', 'IPC'),
 )
 
@@ -19,6 +19,11 @@ class ReceitaForm(forms.ModelForm):
             'tempo_preparo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Tempo (min)'}),
             'modo_preparo': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Modo de Preparo', 'rows': 5}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Sobrescreve o valor inicial para que o campo fique vazio
+        self.fields['nome_prato'].initial = ''
 
 class ReceitaInsumoForm(forms.ModelForm):
     # Campo transitório para definir a unidade utilizada (para conversão)

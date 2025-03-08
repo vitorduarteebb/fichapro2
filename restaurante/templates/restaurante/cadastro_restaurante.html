@@ -51,6 +51,12 @@
     <!-- Campos para Pessoa Física -->
     <div id="pessoa_fisica" style="display: none;">
       <div class="mb-3">
+        <label for="id_nome" class="form-label">
+          <i class="fas fa-user"></i> Nome:
+        </label>
+        {{ form.nome }}
+      </div>
+      <div class="mb-3">
         <label for="id_cpf" class="form-label">
           <i class="fas fa-id-card"></i> CPF:
         </label>
@@ -138,7 +144,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Certifique-se de que o axios esteja carregado, se não estiver definido no base.html -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {

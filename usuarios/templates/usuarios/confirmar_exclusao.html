@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-danger text-white">
+      Confirmar Exclusão
+    </div>
+    <div class="card-body">
+      <p>Tem certeza que deseja excluir o usuário <strong>{{ usuario.username }}</strong>?</p>
+      <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'usuarios:gerenciamento_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -27,7 +27,7 @@
     color: #f1f1f1;
     font-weight: normal;
   }
-  .card-dark .card-body, 
+  .card-dark .card-body,
   .card-dark ul li {
     color: #f1f1f1;
     font-weight: normal;
@@ -77,7 +77,6 @@
     background-color: #555;
     border-radius: 4px;
   }
-  /* Responsividade para telas menores */
   @media (max-width: 768px) {
     .container { padding: 0 10px; }
     .card { margin-bottom: 15px; }
@@ -87,19 +86,35 @@
 
 <div class="container mt-3">
   <div class="row">
-    <!-- Coluna Esquerda: Dados do Restaurante e Fator de Correção -->
+    <!-- Coluna Esquerda: Logo, Dados do Restaurante e Fator de Correção -->
     <div class="col-lg-4 col-md-12 mb-3">
+      <!-- Card para exibir e atualizar a Logo utilizando padrão de imagem circular -->
       <div class="card card-dark shadow-sm mb-3">
-        <div class="card-header">
-          <h4 class="mb-0 section-title">
+        
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <img id="profilePreview" src="{% if restaurante.logo %}{{ restaurante.logo.url }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo do Restaurante" class="rounded-circle" style="width:150px; height:150px; object-fit:cover; border:4px solid #ff9900;">
+          </div>
+          {% if show_actions %}
+            <form method="post" action="{% url 'restaurante:upload_logo' restaurante.pk %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="mt-2">
+                <label for="id_logo" class="btn btn-secondary">
+                  <i class="fas fa-camera mr-1"></i> Alterar Logo
+                </label>
+                <input id="id_logo" type="file" name="logo" style="display: none;" onchange="document.getElementById('uploadButton').click();">
+                <button type="submit" id="uploadButton" class="btn btn-primary btn-sm" style="display: none;">Atualizar</button>
+              </div>
+            </form>
+          {% endif %}
+          <!-- Fim da seção de upload da logo -->
+          <h4 class="section-title">
             {% if restaurante.tipo_pessoa == 'PJ' %}
               {{ restaurante.nome_restaurante|default:"RESTAURANTE SEM NOME" }}
             {% else %}
               {{ restaurante.cpf|default:"RESTAURANTE PF" }}
             {% endif %}
           </h4>
-        </div>
-        <div class="card-body">
           <ul class="list-unstyled small mb-3">
             <li>
               <span>CNPJ/CPF:</span>
@@ -112,20 +127,21 @@
             <li><span>EMAIL:</span> {{ restaurante.email|default:"NÃO CADASTRADO" }}</li>
             <li><span>TELEFONE:</span> {{ restaurante.telefone|default:"NÃO CADASTRADO" }}</li>
           </ul>
-          <!-- Formulário Inline para Atualizar o Fator de Correção Financeiro -->
-          <div class="card card-dark mt-3">
-            <div class="card-header">
-              <h6 class="section-title">FATOR CORREÇÃO FINANCEIRO</h6>
+          {% if show_actions %}
+            <div class="card card-dark mt-3">
+              <div class="card-header">
+                <h6 class="section-title">FATOR CORREÇÃO FINANCEIRO</h6>
+              </div>
+              <div class="card-body">
+                <form method="post" action="">
+                  {% csrf_token %}
+                  {{ fator_form.fator_correcao_financeiro.label_tag }}
+                  {{ fator_form.fator_correcao_financeiro }}
+                  <button type="submit" class="btn btn-primary btn-sm">ATUALIZAR</button>
+                </form>
+              </div>
             </div>
-            <div class="card-body">
-              <form method="post" action="">
-                {% csrf_token %}
-                {{ fator_form.fator_correcao_financeiro.label_tag }}
-                {{ fator_form.fator_correcao_financeiro }}
-                <button type="submit" class="btn btn-primary btn-sm">ATUALIZAR</button>
-              </form>
-            </div>
-          </div>
+          {% endif %}
           <div class="card card-dark mt-3">
             <div class="card-body p-2">
               <h6 class="mb-2 section-title">ENDEREÇO</h6>
@@ -150,9 +166,11 @@
           <div class="card card-dark shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h4 class="mb-0 section-title">INSUMOS CADASTRADOS</h4>
-              <a href="{% url 'insumos:cadastro_insumo' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Insumo">
-                <i class="fas fa-plus"></i>
-              </a>
+              {% if show_actions %}
+                <a href="{% url 'insumos:cadastro_insumo' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Insumo">
+                  <i class="fas fa-plus"></i>
+                </a>
+              {% endif %}
             </div>
             <div class="card-body p-2">
               <div class="table-responsive scrollable-table">
@@ -162,30 +180,40 @@
                       <th>NOME</th>
                       <th>UNIDADE</th>
                       <th>QTD</th>
-                      <th>PREÇO</th>
-                      <th>AÇÕES</th>
+                      {% if show_prices %}
+                        <th>PREÇO</th>
+                      {% endif %}
+                      {% if show_actions %}
+                        <th>AÇÕES</th>
+                      {% endif %}
                     </tr>
                   </thead>
                   <tbody>
                     {% for insumo in insumos|dictsort:"nome" %}
-                    <tr>
-                      <td>{{ insumo.nome }}</td>
-                      <td>{{ insumo.unidade_medida }}</td>
-                      <td>{{ insumo.quantidade }}</td>
-                      <td>{{ insumo.preco }}</td>
-                      <td>
-                        <a href="{% url 'insumos:editar_insumo' insumo.id %}" class="btn btn-warning btn-sm" title="Editar Insumo">
-                          <i class="fas fa-pencil-alt"></i>
-                        </a>
-                        <a href="{% url 'insumos:excluir_insumo' insumo.id %}" class="btn btn-danger btn-sm" title="Excluir Insumo" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTE INSUMO?');">
-                          <i class="fas fa-trash"></i>
-                        </a>
-                      </td>
-                    </tr>
+                      <tr>
+                        <td>{{ insumo.nome }}</td>
+                        <td>{{ insumo.unidade_medida }}</td>
+                        <td>{{ insumo.quantidade }}</td>
+                        {% if show_prices %}
+                          <td>{{ insumo.preco }}</td>
+                        {% endif %}
+                        {% if show_actions %}
+                          <td>
+                            <a href="{% url 'insumos:editar_insumo' insumo.id %}" class="btn btn-warning btn-sm" title="Editar Insumo">
+                              <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="{% url 'insumos:excluir_insumo' insumo.id %}" class="btn btn-danger btn-sm" title="Excluir Insumo" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTE INSUMO?');">
+                              <i class="fas fa-trash"></i>
+                            </a>
+                          </td>
+                        {% endif %}
+                      </tr>
                     {% empty %}
-                    <tr>
-                      <td colspan="5" class="text-center">NENHUM INSUMO CADASTRADO.</td>
-                    </tr>
+                      <tr>
+                        <td colspan="{% if show_actions and show_prices %}5{% elif show_actions or show_prices %}4{% else %}3{% endif %}" class="text-center">
+                          NENHUM INSUMO CADASTRADO.
+                        </td>
+                      </tr>
                     {% endfor %}
                   </tbody>
                 </table>
@@ -200,9 +228,11 @@
           <div class="card card-dark shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h4 class="mb-0 section-title">RECEITAS CADASTRADAS</h4>
-              <a href="{% url 'receitas:receita_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Receita">
-                <i class="fas fa-plus"></i>
-              </a>
+              {% if show_actions %}
+                <a href="{% url 'receitas:receita_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Receita">
+                  <i class="fas fa-plus"></i>
+                </a>
+              {% endif %}
             </div>
             <div class="card-body p-2">
               <div class="table-responsive scrollable-table">
@@ -212,42 +242,52 @@
                       <th>NOME DO PRATO</th>
                       <th>PORÇÃO (G)</th>
                       <th>TEMPO (MIN)</th>
-                      <th>PREÇO KG (R$)</th>
+                      {% if show_prices %}
+                        <th>PREÇO KG (R$)</th>
+                      {% endif %}
                       <th>RENDIMENTO</th>
-                      <th>AÇÕES</th>
+                      {% if show_actions %}
+                        <th>AÇÕES</th>
+                      {% endif %}
                     </tr>
                   </thead>
                   <tbody>
                     {% for receita in receitas|dictsort:"nome_prato" %}
-                    <tr>
-                      <td>
-                        <a href="{% url 'receitas:detalhe_receita' receita.id %}" class="link-receita">
-                          {{ receita.nome_prato }}
-                        </a>
-                      </td>
-                      <td>{{ receita.porcao_sugerida }}</td>
-                      <td>{{ receita.tempo_preparo }}</td>
-                      <td>{{ receita.preco_kg|floatformat:2 }}</td>
-                      <td>
-                        {% if receita.rendimento %}
-                          {{ receita.rendimento|floatformat:1 }}
-                        {% else %}
-                          -
+                      <tr>
+                        <td>
+                          <a href="{% url 'receitas:detalhe_receita' receita.id %}" class="link-receita">
+                            {{ receita.nome_prato }}
+                          </a>
+                        </td>
+                        <td>{{ receita.porcao_sugerida }}</td>
+                        <td>{{ receita.tempo_preparo }}</td>
+                        {% if show_prices %}
+                          <td>{{ receita.preco_kg|floatformat:2 }}</td>
                         {% endif %}
-                      </td>
-                      <td>
-                        <a href="{% url 'receitas:editar_receita' receita.id %}" class="btn btn-warning btn-sm" title="Editar Receita">
-                          <i class="fas fa-pencil-alt"></i>
-                        </a>
-                        <a href="{% url 'receitas:excluir_receita' receita.id %}" class="btn btn-danger btn-sm" title="Excluir Receita" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTA RECEITA?');">
-                          <i class="fas fa-trash"></i>
-                        </a>
-                      </td>
-                    </tr>
+                        <td>
+                          {% if receita.rendimento %}
+                            {{ receita.rendimento|floatformat:1 }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                        {% if show_actions %}
+                          <td>
+                            <a href="{% url 'receitas:editar_receita' receita.id %}" class="btn btn-warning btn-sm" title="Editar Receita">
+                              <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="{% url 'receitas:excluir_receita' receita.id %}" class="btn btn-danger btn-sm" title="Excluir Receita" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTA RECEITA?');">
+                              <i class="fas fa-trash"></i>
+                            </a>
+                          </td>
+                        {% endif %}
+                      </tr>
                     {% empty %}
-                    <tr>
-                      <td colspan="6" class="text-center">NENHUMA RECEITA CADASTRADA.</td>
-                    </tr>
+                      <tr>
+                        <td colspan="{% if show_actions and show_prices %}6{% elif show_actions or show_prices %}5{% else %}4{% endif %}" class="text-center">
+                          NENHUMA RECEITA CADASTRADA.
+                        </td>
+                      </tr>
                     {% endfor %}
                   </tbody>
                 </table>
@@ -260,9 +300,11 @@
           <div class="card card-dark shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h4 class="mb-0 section-title">FICHAS TÉCNICAS CADASTRADAS</h4>
-              <a href="{% url 'fichas_tecnicas:ficha_tecnica_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Ficha Técnica">
-                <i class="fas fa-plus"></i>
-              </a>
+              {% if show_actions %}
+                <a href="{% url 'fichas_tecnicas:ficha_tecnica_cadastro' restaurante.id %}" class="btn btn-custom btn-sm" title="Cadastrar Ficha Técnica">
+                  <i class="fas fa-plus"></i>
+                </a>
+              {% endif %}
             </div>
             <div class="card-body p-2">
               <div class="table-responsive scrollable-table">
@@ -273,39 +315,45 @@
                       <th>PORÇÃO (G)</th>
                       <th>TEMPO (MIN)</th>
                       <th>RENDIMENTO</th>
-                      <th>AÇÕES</th>
+                      {% if show_actions %}
+                        <th>AÇÕES</th>
+                      {% endif %}
                     </tr>
                   </thead>
                   <tbody>
                     {% for ficha in fichas_tecnicas|dictsort:"nome_prato" %}
-                    <tr>
-                      <td>
-                        <a href="{% url 'fichas_tecnicas:detalhe_ficha' ficha.id %}" class="link-ficha">
-                          {{ ficha.nome_prato }}
-                        </a>
-                      </td>
-                      <td>{{ ficha.porcao_sugerida }}</td>
-                      <td>{{ ficha.tempo_preparo }}</td>
-                      <td>
-                        {% if ficha.rendimento %}
-                          {{ ficha.rendimento|floatformat:1 }}
-                        {% else %}
-                          -
+                      <tr>
+                        <td>
+                          <a href="{% url 'fichas_tecnicas:detalhe_ficha' ficha.id %}" class="link-ficha">
+                            {{ ficha.nome_prato }}
+                          </a>
+                        </td>
+                        <td>{{ ficha.porcao_sugerida }}</td>
+                        <td>{{ ficha.tempo_preparo }}</td>
+                        <td>
+                          {% if ficha.rendimento %}
+                            {{ ficha.rendimento|floatformat:1 }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                        {% if show_actions %}
+                          <td>
+                            <a href="{% url 'fichas_tecnicas:editar_ficha_tecnica' ficha.id %}" class="btn btn-warning btn-sm" title="Editar Ficha Técnica">
+                              <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="{% url 'fichas_tecnicas:excluir_ficha_tecnica' ficha.id %}" class="btn btn-danger btn-sm" title="Excluir Ficha Técnica" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTA FICHA TÉCNICA?');">
+                              <i class="fas fa-trash"></i>
+                            </a>
+                          </td>
                         {% endif %}
-                      </td>
-                      <td>
-                        <a href="{% url 'fichas_tecnicas:editar_ficha_tecnica' ficha.id %}" class="btn btn-warning btn-sm" title="Editar Ficha Técnica">
-                          <i class="fas fa-pencil-alt"></i>
-                        </a>
-                        <a href="{% url 'fichas_tecnicas:excluir_ficha_tecnica' ficha.id %}" class="btn btn-danger btn-sm" title="Excluir Ficha Técnica" onclick="return confirm('TEM CERTEZA QUE DESEJA EXCLUIR ESTA FICHA TÉCNICA?');">
-                          <i class="fas fa-trash"></i>
-                        </a>
-                      </td>
-                    </tr>
+                      </tr>
                     {% empty %}
-                    <tr>
-                      <td colspan="5" class="text-center">NENHUMA FICHA TÉCNICA CADASTRADA.</td>
-                    </tr>
+                      <tr>
+                        <td colspan="{% if show_actions %}5{% else %}4{% endif %}" class="text-center">
+                          NENHUMA FICHA TÉCNICA CADASTRADA.
+                        </td>
+                      </tr>
                     {% endfor %}
                   </tbody>
                 </table>

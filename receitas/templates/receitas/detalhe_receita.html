@@ -71,7 +71,6 @@
   ul li {
     margin-bottom: 5px;
   }
-  /* Estilo para o formulário do valor trabalhado */
   .valor-form {
     margin-bottom: 20px;
   }
@@ -103,29 +102,40 @@
       <div class="data-item">
         <span>TEMPO DE PREPARO (MIN):</span> {{ receita.tempo_preparo }}
       </div>
+      
+      {% if show_prices %}
       <div class="data-item">
         <span>PREÇO DO KG (R$):</span> {{ receita.preco_kg|floatformat:2 }}
       </div>
+      {% endif %}
       
-      <!-- Campo editável para atualizar o VALOR TRABALHADO (ficará acima dos preços de venda) -->
+      {% if show_prices %}
       <div class="section-title">VALOR TRABALHADO (R$)</div>
       <form method="post" action="{% url 'receitas:atualizar_valor_trabalhado' receita.id %}" class="valor-form">
         {% csrf_token %}
         <input type="text" name="valor_trabalhado" value="{{ receita.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
         <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
       </form>
+      {% endif %}
       
-      <!-- Seção para exibir os preços de venda (IFOOD) -->
+      {% if show_prices %}
       <div class="section-title">VALORES DE VENDA</div>
       <div id="sale-prices"></div>
+      {% endif %}
       
       <div class="section-title">INGREDIENTES</div>
       <ul>
         {% for item in receita.itens.all|dictsort:"insumo.nome" %}
           <li>
             <span>{{ item.insumo.nome|upper }}:</span>
-            {{ item.quantidade_utilizada }} {{ item.insumo.unidade_medida|upper }}
-            (CUSTO: R$ {{ item.custo_utilizado }})
+            {% if item.insumo.unidade_medida|lower|cut:" " == 'kg' and calc_unit == 'g' %}
+              {{ item.quantidade_utilizada|floatformat:2 }} G
+            {% else %}
+              {{ item.quantidade_utilizada|floatformat:2 }} {{ item.insumo.unidade_medida|upper }}
+            {% endif %}
+            {% if show_prices %}
+              (CUSTO: R$ {{ item.adjusted_custo|floatformat:2 }})
+            {% endif %}
           </li>
         {% empty %}
           <li>NENHUM INSUMO CADASTRADO.</li>
@@ -153,9 +163,10 @@
   </div>
 </div>
 
+{% if show_prices %}
 {% block extra_js %}
 <script>
-  // Função para atualizar os preços de venda via AJAX
+  // Função para atualizar os preços de venda via AJAX (apenas se show_prices for verdadeiro)
   function updateReceitaData() {
     fetch("{% url 'receitas:api_detalhe_receita' receita.id %}")
       .then(response => response.json())
@@ -170,11 +181,12 @@
       .catch(error => console.log("ERRO AO ATUALIZAR OS DADOS:", error));
   }
   
-  // Atualiza imediatamente ao carregar a página e a cada 30 segundos
   document.addEventListener("DOMContentLoaded", function() {
     updateReceitaData();
     setInterval(updateReceitaData, 30000);
   });
 </script>
 {% endblock %}
+{% endif %}
+
 {% endblock %}
