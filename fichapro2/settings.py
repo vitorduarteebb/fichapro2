@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'chave-temporaria-insegura')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # ALLOWED_HOSTS: Liste seu domínio, IP e outros hosts autorizados
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'fichapro.com.br,82.29.57.111').split(',')
+ALLOWED_HOSTS = ['fichapro.com.br', 'www.fichapro.com.br', '82.29.57.111']
 
 # --- Aplicações ---
 INSTALLED_APPS = [
