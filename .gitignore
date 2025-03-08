@@ -1,0 +1,17 @@
+# Ignorar ambiente virtual
+venv/
+
+# Ignorar arquivos compilados Python e cache
+*.pyc
+__pycache__/
+
+# Ignorar arquivo de variáveis de ambiente
+.env
+
+# Se você tiver um arquivo de configurações locais com dados sensíveis, como o settings.py,
+# avalie movê-los para um arquivo separado e adicioná-lo ao .gitignore.
+# Por exemplo, se criar um arquivo chamado settings_local.py com dados sensíveis:
+settings.py
+
+# Outros arquivos que não precisam ser versionados (logs, etc.)
+*.log
