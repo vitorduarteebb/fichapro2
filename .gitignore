@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ignorar ambiente virtual
 venv/
 
@@ -15,3 +16,25 @@ settings.py
 
 # Outros arquivos que não precisam ser versionados (logs, etc.)
 *.log
+=======
+# Arquivos compilados Python
+*.pyc
+__pycache__/
+
+# Arquivos de banco de dados SQLite
+db.sqlite3
+
+# Arquivos de mídia e estáticos
+media/
+staticfiles/
+
+# Ambiente virtual Python
+venv/
+
+# Arquivos do VS Code (opcional)
+.vscode/
+
+# Arquivos de ambiente (sensível)
+.env
+
+>>>>>>> 6951453651e2e9f3dc5a90f7a99762c831ea8ed1
