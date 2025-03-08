@@ -17,14 +17,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # --- Segurança e Debug ---
-# SECRET_KEY: defina uma variável de ambiente DJANGO_SECRET_KEY no VPS
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'chave-temporaria-insegura')
-
-# DEBUG: Deve ser False em produção
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ALLOWED_HOSTS: Liste seu domínio, IP e outros hosts autorizados
-ALLOWED_HOSTS = ['fichapro.com.br', 'www.fichapro.com.br', '82.29.57.111']
+ALLOWED_HOSTS = ['fichapro.com.br', 'www.fichapro.com.br', '82.29.57.111', 'localhost', '127.0.0.1']
+
+AUTH_USER_MODEL = 'usuarios.CustomUser'
 
 # --- Aplicações ---
 INSTALLED_APPS = [
@@ -34,7 +32,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Apps do projeto
     'restaurante',
     'insumos',
     'receitas',
@@ -49,7 +46,6 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -60,7 +56,7 @@ ROOT_URLCONF = 'fichapro2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'core' / 'templates'],  # Pasta de templates
+        'DIRS': [BASE_DIR / 'core' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,7 +72,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'fichapro2.wsgi.application'
 
 # --- Banco de Dados ---
-# Configuração para MySQL. As credenciais são definidas por variáveis de ambiente.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -102,11 +97,11 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# --- Arquivos Estáticos ---
+# --- Static files ---
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# --- Configuração Default para chave primária ---
+# --- Default primary key field type ---
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
