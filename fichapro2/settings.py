@@ -12,9 +12,12 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+<<<<<<< Updated upstream
 # --- Media Files ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+=======
+>>>>>>> Stashed changes
 
 # --- Segurança e Debug ---
 # SECRET_KEY: defina uma variável de ambiente DJANGO_SECRET_KEY no VPS
@@ -23,8 +26,18 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'chave-temporaria-insegura')
 # DEBUG: Deve ser False em produção
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
+<<<<<<< Updated upstream
 # ALLOWED_HOSTS: Liste seu domínio, IP e outros hosts autorizados
 ALLOWED_HOSTS = ['fichapro.com.br', 'www.fichapro.com.br', '82.29.57.111']
+=======
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['fichapro.com.br', 'www.fichapro.com.br', '127.0.0.1']
+
+
+# Application definition
+>>>>>>> Stashed changes
 
 # --- Aplicações ---
 INSTALLED_APPS = [
@@ -74,6 +87,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fichapro2.wsgi.application'
 
+<<<<<<< Updated upstream
 # --- Banco de Dados ---
 # Configuração para MySQL. As credenciais são definidas por variáveis de ambiente.
 DATABASES = {
@@ -84,6 +98,17 @@ DATABASES = {
         'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'root'),
         'HOST': os.environ.get('MYSQL_HOST', 'localhost'),
         'PORT': os.environ.get('MYSQL_PORT', '3306'),
+=======
+
+# Database
+# Usando SQLite para facilitar a implantação e evitar a necessidade do mysqlclient.
+# Para usar MySQL, instale o mysqlclient (conforme explicado acima) e ajuste a configuração abaixo.
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+>>>>>>> Stashed changes
     }
 }
 
@@ -101,10 +126,28 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+<<<<<<< Updated upstream
 # --- Arquivos Estáticos ---
+=======
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+>>>>>>> Stashed changes
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+<<<<<<< Updated upstream
 # --- Configuração Default para chave primária ---
+=======
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+>>>>>>> Stashed changes
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
