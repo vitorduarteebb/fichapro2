@@ -1,307 +1,280 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}DETALHES DO RESTAURANTE{% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
-    <style>
-      :root {
-        --primary-color: #00bac7;
-        --hover-bg-color: #2a2a3c;
-        --text-color: #c2c2dc;
-        --bg-dark: #121212;
-        --bg-secondary: #1e1e1e;
-        --sidebar-width: 250px;
-        --sidebar-collapsed-width: 60px;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: var(--bg-dark);
-        color: #f8f9fa;
-        font-family: sans-serif;
-        text-transform: uppercase;
-        font-weight: normal;
-      }
-      a {
-        color: var(--primary-color);
-        text-decoration: none;
-      }
-      a:hover {
-        color: var(--primary-color);
-        text-decoration: underline;
-      }
-      /* Wrapper que envolve sidebar e main content */
-      .wrapper {
-        display: flex;
-        min-height: 100vh;
-        transition: all 0.3s ease;
-      }
-      /* Sidebar */
-      .sidebar {
-        background-color: var(--bg-secondary);
-        color: var(--text-color);
-        width: var(--sidebar-width);
-        transition: width 0.3s ease;
-        overflow-x: hidden;
-        border-right: 1px solid #444;
-      }
-      .sidebar.collapsed {
-        width: var(--sidebar-collapsed-width);
-      }
-      .sidebar .toggle-btn {
-        text-align: right;
-        padding: 1rem;
-        cursor: pointer;
-        color: var(--text-color);
-      }
-      .sidebar .toggle-btn:hover {
-        background-color: var(--hover-bg-color);
-      }
-      .sidebar ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      .sidebar li {
-        display: block;
-      }
-      .sidebar li a {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        transition: background-color 0.3s ease;
-        color: var(--text-color);
-      }
-      .sidebar li a:hover,
-      .sidebar li a.active {
-        background-color: var(--hover-bg-color);
-        color: #fff;
-      }
-      .sidebar li a .link-text {
-        margin-left: 10px;
-        transition: opacity 0.3s ease;
-      }
-      .sidebar.collapsed li a .link-text {
-        opacity: 0;
-      }
-      /* Submenu na Sidebar */
-      .sidebar ul.submenu {
-        padding-left: 1rem;
-      }
-      /* Main Content */
-      .main-content {
-        flex: 1;
-        background-color: var(--bg-dark);
-        padding: 1.5rem;
-        transition: margin-left 0.3s ease;
-      }
-      @media (max-width: 768px) {
-        .wrapper {
-          flex-direction: column;
-        }
-        .sidebar {
-          width: 100%;
-        }
-        .main-content {
-          margin-left: 0;
-        }
-      }
-      /* Navbar Superior */
-      .navbar-custom {
-        background-color: var(--bg-secondary);
-        border-bottom: 1px solid #444;
-      }
-      .navbar-custom .navbar-brand,
-      .navbar-custom .nav-link,
-      .navbar-custom .form-control {
-        color: var(--text-color);
-      }
-      .navbar-custom .form-control {
-        background-color: var(--bg-dark);
-        border: none;
-      }
-      .navbar-custom .form-control::placeholder {
-        color: #6c757d;
-      }
-      .navbar-custom .dropdown-menu {
-        background-color: var(--bg-secondary);
-        border: none;
-      }
-      .navbar-custom .dropdown-item {
-        color: var(--text-color);
-      }
-      .navbar-custom .dropdown-item:hover {
-        background-color: var(--hover-bg-color);
-      }
-    </style>
-    {% block extra_css %}{% endblock %}
-  </head>
-  <body>
-    <!-- Navbar Superior -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'usuarios:dashboard' %}">FichaPro</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
-          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <!-- Campo de Busca -->
-          <form class="d-flex me-auto" role="search" method="GET" action="{% url 'search_results' %}">
-            <input class="form-control me-2" type="search" placeholder="Buscar..." aria-label="Search" name="q">
-            <button class="btn btn-outline-success" type="submit">Buscar</button>
-          </form>
-          <!-- Menu de Usuário -->
-          <ul class="navbar-nav mb-2 mb-lg-0">
-            {% if request.user.is_authenticated %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" 
-                  aria-expanded="false">
-                  {% if request.user.profile.image %}
-                    <img src="{{ request.user.profile.image.url }}" alt="{{ request.user.username }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; margin-right:5px;">
-                  {% else %}
-                    <i class="fas fa-user"></i>
-                  {% endif %}
-                  {{ request.user.username }}
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">Perfil</a></li>
-                  <li><a class="dropdown-item" href="{% url 'usuarios:alterar_senha' %}">Alterar Senha</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li>
-                    <form action="{% url 'usuarios:logout' %}" method="post" style="display: inline;">
-                      {% csrf_token %}
-                      <button type="submit" class="dropdown-item" style="border: none; background: none; padding: 0; margin: 0;">Sair</button>
-                    </form>
-                  </li>
-                </ul>
-              </li>
-            {% else %}
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'login' %}">Entrar</a>
-              </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </nav>
 
-    <!-- Wrapper com Sidebar e Conteúdo Principal -->
-    <div class="wrapper">
-      <!-- Sidebar -->
-      <nav id="sidebarMenu" class="sidebar">
-        <div class="toggle-btn" id="sidebarToggle">
-          <i class="fas fa-bars"></i>
-        </div>
-        <ul>
-          <!-- Dashboard -->
-          <li>
-            <a href="{% url 'usuarios:dashboard' %}" class="active">
-              <i class="fas fa-home"></i>
-              <span class="link-text">DASHBOARD</span>
-            </a>
-          </li>
-          <!-- Restaurante -->
-          <li>
-            {% if request.user.is_authenticated and request.user.role == "admin" %}
-              <a data-bs-toggle="collapse" href="#menuRestaurante" role="button" aria-expanded="false" aria-controls="menuRestaurante">
-                <i class="fas fa-utensils"></i>
-                <span class="link-text">RESTAURANTE</span>
-              </a>
-              <div class="collapse" id="menuRestaurante">
-                <ul class="btn-toggle-nav list-unstyled submenu">
-                  <li>
-                    <a href="{% url 'restaurante:cadastro_restaurante' %}">
-                      <i class="fas fa-plus-circle"></i>
-                      <span class="link-text">CADASTRO</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'restaurante:lista_restaurantes' %}">
-                      <i class="fas fa-list"></i>
-                      <span class="link-text">LISTA</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            {% else %}
-              <!-- Para Standard/Master: link para "Meu Restaurante" -->
-              <a href="{% url 'restaurante:restaurante_detail' request.user.restaurante.id %}">
-                <i class="fas fa-utensils"></i>
-                <span class="link-text">MEU RESTAURANTE</span>
-              </a>
-            {% endif %}
-          </li>
-          <!-- Novo item: Insumos para usuários Master -->
-          {% if request.user.is_authenticated and request.user.role == "master" %}
-            <li>
-              <a href="{% url 'insumos:lista_insumos' %}">
-                <i class="fas fa-boxes"></i>
-                <span class="link-text">INSUMOS</span>
-              </a>
-            </li>
-          {% endif %}
-          <!-- Usuários (somente para Admin) -->
-          {% if request.user.is_authenticated and request.user.role == "admin" %}
-          <li>
-            <a data-bs-toggle="collapse" href="#menuUsuarios" role="button" aria-expanded="false" aria-controls="menuUsuarios">
-              <i class="fas fa-users"></i>
-              <span class="link-text">USUÁRIOS</span>
-            </a>
-            <div class="collapse" id="menuUsuarios">
-              <ul class="btn-toggle-nav list-unstyled submenu">
-                <li>
-                  <a href="{% url 'usuarios:cadastrar_usuario' %}">
-                    <i class="fas fa-user-plus"></i>
-                    <span class="link-text">CADASTRO</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="{% url 'usuarios:gerenciamento_usuarios' %}">
-                    <i class="fas fa-user-cog"></i>
-                    <span class="link-text">GERENCIAMENTO</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </li>
-          {% endif %}
-          <!-- Outros itens podem ser adicionados aqui -->
-        </ul>
-      </nav>
+{% block title %}DETALHES DA FICHA TÉCNICA{% endblock %}
 
-      <!-- Main Content -->
-      <div class="main-content">
-        {% block content %}
-        <!-- Conteúdo específico de cada página será renderizado aqui -->
-        {% endblock %}
-      </div>
+{% block content %}
+<style>
+  /* TEMA ESCURO COM GRADIENTE LARANJA – TEXTO EM MAIÚSCULO, BRANCO E SEM NEGRITO */
+  body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+  }
+  .card {
+    background-color: #1e1e1e;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 15px 20px;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #ff9900, #ff6600);
+    color: #ffffff;
+  }
+  .card-body {
+    padding: 20px;
+    color: #ffffff;
+  }
+  .profile-img {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .profile-img img {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #ff9900;
+  }
+  .section-title {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ff9900;
+    padding-bottom: 5px;
+  }
+  .data-item {
+    margin-bottom: 10px;
+  }
+  .data-item span {
+    color: #ff9900;
+  }
+  .link-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .link-back:hover {
+    text-decoration: underline;
+  }
+  ul li {
+    margin-bottom: 5px;
+  }
+  .valor-form {
+    margin-bottom: 20px;
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<div class="container mt-4">
+  <a href="{% url 'restaurante:restaurante_detail' ficha.restaurante.id %}" class="link-back">
+    <i class="fas fa-arrow-left"></i> VOLTAR AO RESTAURANTE
+  </a>
+  
+  {% if show_prices %}
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-file-alt"></i> {{ ficha.nome_prato|upper }}
     </div>
+    <div class="card-body">
+      <div class="profile-img">
+        {% if ficha.imagem %}
+          <img src="{{ ficha.imagem.url }}" alt="{{ ficha.nome_prato|upper }}">
+        {% else %}
+          <img src="{% static 'images/default_profile.png' %}" alt="IMAGEM PADRÃO">
+        {% endif %}
+      </div>
+      <div class="section-title">DETALHES DA FICHA TÉCNICA</div>
+      <div class="data-item">
+        <span>PORÇÃO SUGERIDA (G):</span> {{ ficha.porcao_sugerida|floatformat:0 }}
+      </div>
+      <div class="data-item">
+        <span>TEMPO DE PREPARO (MIN):</span> {{ ficha.tempo_preparo }}
+      </div>
+      <div class="data-item">
+        <span>PESO TOTAL (G):</span> {{ ficha.peso_total|default:"-" }}
+      </div>
+      <div class="data-item">
+        <span>CUSTO TOTAL INSUMOS (R$):</span> {{ ficha.custo_total_insumos|floatformat:2 }}
+      </div>
+      <div class="data-item">
+        <span>CUSTO TOTAL RECEITAS (R$):</span> {{ ficha.custo_total_receitas|floatformat:2 }}
+      </div>
+      <div class="section-title">VALOR TRABALHADO (R$)</div>
+      {% if request.user.role == "admin" %}
+        <form method="post" action="{% url 'fichas_tecnicas:atualizar_valor_trabalhado' ficha.id %}" class="valor-form">
+          {% csrf_token %}
+          <input type="text" name="valor_trabalhado" value="{{ ficha.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
+          <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
+        </form>
+      {% else %}
+        <p class="data-item">
+          <span>VALOR TRABALHADO (R$):</span> {{ ficha.valor_trabalhado|default:"NÃO INFORMADO" }}
+        </p>
+      {% endif %}
+      <div class="section-title">VALORES DE VENDA</div>
+      <div id="sale-prices"></div>
+      
+      <div class="section-title">INGREDIENTES</div>
+      <ul>
+        {% for item in ficha.itens_insumos.all|dictsort:"insumo.nome" %}
+          <li>
+            <a href="{% url 'insumos:detalhe_insumo' item.insumo.id %}" class="link-back">
+              {{ item.insumo.nome|upper }}
+            </a>:
+            {% if item.insumo.unidade_medida|lower == 'kg' and calc_unit == 'g' %}
+              {{ item.quantidade_utilizada|floatformat:2 }} G
+            {% else %}
+              {{ item.quantidade_utilizada|floatformat:2 }} {{ item.insumo.unidade_medida|upper }}
+            {% endif %}
+            {% if item.insumo.unidade_medida|lower == 'kg' and calc_unit == 'g' %}
+              {% widthratio item.custo_utilizado 1000 1 as adjusted_cost %}
+              (CUSTO: R$ {{ adjusted_cost|floatformat:2 }})
+            {% else %}
+              (CUSTO: R$ {{ item.custo_utilizado|floatformat:2 }})
+            {% endif %}
+          </li>
+        {% empty %}
+          <li>NENHUM INSUMO CADASTRADO.</li>
+        {% endfor %}
+      </ul>
+      
+      <div class="section-title">RECEITAS</div>
+      <ul>
+        {% for item in ficha.itens_receitas.all|dictsort:"receita.nome_prato" %}
+          <li>
+            <a href="{% url 'receitas:detalhe_receita' item.receita.id %}" class="link-back">
+              {{ item.receita.nome_prato|upper }}
+            </a>:
+            {{ item.quantidade_utilizada|floatformat:2 }} {{ item.unidade|upper }}
+            (CUSTO: R$ {{ item.custo_utilizado|floatformat:2 }})
+          </li>
+        {% empty %}
+          <li>NENHUMA RECEITA CADASTRADA.</li>
+        {% endfor %}
+      </ul>
+      
+      <div class="section-title">MODO DE PREPARO</div>
+      <div class="data-item">
+        {{ ficha.modo_preparo|linebreaks }}
+      </div>
+      
+      {% if ficha.receitas_relacionadas.all %}
+      <div class="section-title">RECEITAS RELACIONADAS</div>
+      <ul>
+        {% for r in ficha.receitas_relacionadas.all|dictsort:"nome_prato" %}
+          <li>
+            <a href="{% url 'receitas:detalhe_receita' r.id %}" class="link-back">
+              {{ r.nome_prato|upper }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <!-- Exibição para usuários "standard" e "master": apenas INSUMOS, RECEITAS e MODO DE PREPARO -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-file-alt"></i> {{ ficha.nome_prato|upper }}
+    </div>
+    <div class="card-body">
+      <div class="profile-img">
+        {% if ficha.imagem %}
+          <img src="{{ ficha.imagem.url }}" alt="{{ ficha.nome_prato|upper }}">
+        {% else %}
+          <img src="{% static 'images/default_profile.png' %}" alt="IMAGEM PADRÃO">
+        {% endif %}
+      </div>
+      <div class="section-title">INGREDIENTES</div>
+      <ul>
+        {% for item in ficha.itens_insumos.all|dictsort:"insumo.nome" %}
+          <li>
+            <a href="{% url 'insumos:detalhe_insumo' item.insumo.id %}" class="link-back">
+              {{ item.insumo.nome|upper }}
+            </a>:
+            {% if item.insumo.unidade_medida|lower == 'kg' and calc_unit == 'g' %}
+              {{ item.quantidade_utilizada|floatformat:2 }} G
+            {% else %}
+              {{ item.quantidade_utilizada|floatformat:2 }} {{ item.insumo.unidade_medida|upper }}
+            {% endif %}
+          </li>
+        {% empty %}
+          <li>NENHUM INSUMO CADASTRADO.</li>
+        {% endfor %}
+      </ul>
+      
+      <div class="section-title">RECEITAS</div>
+      <ul>
+        {% for item in ficha.itens_receitas.all|dictsort:"receita.nome_prato" %}
+          <li>
+            <a href="{% url 'receitas:detalhe_receita' item.receita.id %}" class="link-back">
+              {{ item.receita.nome_prato|upper }}
+            </a>:
+            {{ item.quantidade_utilizada|floatformat:2 }} {{ item.unidade|upper }}
+          </li>
+        {% empty %}
+          <li>NENHUMA RECEITA CADASTRADA.</li>
+        {% endfor %}
+      </ul>
+      
+      <div class="section-title">MODO DE PREPARO</div>
+      <div class="data-item">
+        {{ ficha.modo_preparo|linebreaks }}
+      </div>
+      
+      {% if ficha.receitas_relacionadas.all %}
+      <div class="section-title">RECEITAS RELACIONADAS</div>
+      <ul>
+        {% for r in ficha.receitas_relacionadas.all|dictsort:"nome_prato" %}
+          <li>
+            <a href="{% url 'receitas:detalhe_receita' r.id %}" class="link-back">
+              {{ r.nome_prato|upper }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
 
-    <!-- JavaScript para Toggle da Sidebar com Persistência -->
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        var sidebar = document.getElementById("sidebarMenu");
-        if (localStorage.getItem("sidebarCollapsed") === "true") {
-          sidebar.classList.add("collapsed");
-        }
-        var toggleBtn = document.getElementById("sidebarToggle");
-        if (toggleBtn) {
-          toggleBtn.addEventListener("click", function () {
-            sidebar.classList.toggle("collapsed");
-            localStorage.setItem("sidebarCollapsed", sidebar.classList.contains("collapsed"));
-          });
-        }
-      });
-    </script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
-  </body>
-</html>
+{% if show_prices %}
+{% block extra_js %}
+<script>
+  // Função para atualizar os valores de venda via AJAX (executado somente para Admin e Master)
+  function updateFichaData() {
+    fetch("{% url 'fichas_tecnicas:api_detalhe_ficha' ficha.id %}")
+      .then(response => response.json())
+      .then(data => {
+        let venda = parseFloat(data.valor_venda_sugerida);
+        let salePricesHtml =
+          "<div class='data-item'><span>VALOR DE VENDA SUGERIDA (R$):</span> " + venda.toFixed(2) + "</div>" +
+          "<div class='data-item'><span>PREÇO IFOOD PLANO 1 (R$):</span> " + (venda * 1.12).toFixed(2) + "</div>" +
+          "<div class='data-item'><span>PREÇO IFOOD PLANO 2 (R$):</span> " + (venda * 1.25).toFixed(2) + "</div>";
+        document.getElementById("sale-prices").innerHTML = salePricesHtml;
+      })
+      .catch(error => console.log("ERRO AO ATUALIZAR OS DADOS:", error));
+  }
+  
+  document.addEventListener("DOMContentLoaded", function() {
+    updateFichaData();
+    setInterval(updateFichaData, 30000);
+  });
+</script>
+{% endblock %}
+{% endif %}
+
+{% endblock %}

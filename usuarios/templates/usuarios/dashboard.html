@@ -44,12 +44,12 @@
   <!-- Widgets Section -->
   <section class="dashboard-widgets row g-4">
     {% comment %}
-      Exemplo de widgets: Cada widget deve conter título, valor, subtítulo e um ícone.
-      Certifique-se de que sua view passe uma lista de dicionários para 'widgets'.
+      Exemplo de widgets: Cada widget deve conter titulo, valor, subtitulo e um icone.
+      Certifique-se de que sua view passe uma lista de dicionarios para 'widgets'.
       Exemplo:
       widgets = [
-         { 'title': 'Usuários', 'value': 150, 'subtitle': 'Cadastrados', 'icon': 'bi-people' },
-         { 'title': 'Vendas', 'value': '$12.345', 'subtitle': 'Este mês', 'icon': 'bi-currency-dollar' },
+         { 'title': 'Usuarios', 'value': 150, 'subtitle': 'Cadastrados', 'icon': 'bi-people' },
+         { 'title': 'Vendas', 'value': '$12.345', 'subtitle': 'Este mes', 'icon': 'bi-currency-dollar' },
          ...
       ]
     {% endcomment %}
@@ -70,7 +70,7 @@
         </div>
       </div>
     {% empty %}
-      <p class="text-center">Nenhum dado disponível no momento.</p>
+      <p class="text-center">Nenhum dado disponivel no momento.</p>
     {% endfor %}
   </section>
 
@@ -91,11 +91,11 @@
   <!-- Inclua o Chart.js a partir de um CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Verifica se os dados do gráfico foram passados corretamente no contexto
+    // Verifica se os dados do grafico foram passados corretamente no contexto
     var salesLabels = {{ sales_data.labels|default:"[]"|safe }};
     var salesValues = {{ sales_data.values|default:"[]"|safe }};
 
-    // Se não houver dados, defina arrays vazias
+    // Se nao houver dados, defina arrays vazias
     if (!salesLabels.length) {
       salesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
       salesValues = [0, 0, 0, 0, 0, 0];
