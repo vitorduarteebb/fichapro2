@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Perfil{% endblock %}
+
+{% block content %}
+<style>
+  .edit-profile-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+  }
+  .edit-profile-card {
+    background: linear-gradient(135deg, #1f1c2c, #928dab);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 600px;
+    color: #fff;
+  }
+  .edit-profile-card h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .current-image {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .current-image img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    object-fit: cover;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  .current-image img:hover {
+    opacity: 0.8;
+  }
+  .edit-profile-card .form-group {
+    margin-bottom: 1rem;
+  }
+  .edit-profile-card label {
+    font-weight: bold;
+  }
+  .edit-profile-card input, 
+  .edit-profile-card textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+  }
+  .edit-profile-card button {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #00bac7;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .edit-profile-card button:hover {
+    background-color: #0096a8;
+  }
+</style>
+
+<div class="container edit-profile-container">
+  <div class="edit-profile-card">
+    <h2>Editar Perfil</h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="current-image">
+        <label for="profile_image">
+          {% if request.user.profile.image %}
+            <img id="profilePreview" src="{{ request.user.profile.image.url }}" alt="{{ request.user.username }}">
+          {% else %}
+            <img id="profilePreview" src="{% static 'images/default_profile.png' %}" alt="{{ request.user.username }}">
+          {% endif %}
+        </label>
+        <!-- Input file dentro do formulário -->
+        <input type="file" id="profile_image" name="profile_image" style="display: none;">
+      </div>
+      <div class="form-group">
+        <label for="full_name">Nome Completo</label>
+        <input type="text" id="full_name" name="full_name" value="{{ request.user.get_full_name }}" placeholder="Digite seu nome completo">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ request.user.email }}" placeholder="Digite seu email">
+      </div>
+      <div class="form-group">
+        <label for="bio">Biografia</label>
+        <textarea id="bio" name="bio" placeholder="Fale um pouco sobre você...">{{ request.user.profile.bio|default_if_none:"" }}</textarea>
+      </div>
+      <button type="submit">Salvar Alterações</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Quando o usuário clicar na imagem (label), dispara o clique no input de arquivo
+  const fileInput = document.getElementById('profile_image');
+  fileInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('profilePreview').src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+{% endblock %}

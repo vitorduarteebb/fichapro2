@@ -4,8 +4,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserEditForm
 from .models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
 
 def login_view(request):
     if request.method == "POST":
@@ -39,15 +41,29 @@ def dashboard_view(request):
 
 @login_required
 def gerenciamento_usuarios(request):
-    """
-    Se o usuário for Admin, exibe todos os usuários; caso contrário, apenas os usuários do mesmo restaurante.
-    """
     if request.user.role == "admin":
         usuarios = CustomUser.objects.all()
     else:
         usuarios = CustomUser.objects.filter(restaurante=request.user.restaurante)
+    
+    now = timezone.now()
+    for usuario in usuarios:
+        try:
+            last_seen = usuario.profile.last_seen
+        except AttributeError:
+            last_seen = None
+        if last_seen:
+            delta = now - last_seen
+            if delta <= timedelta(minutes=5):
+                usuario.status_color = "green"
+            elif delta <= timedelta(hours=1):
+                usuario.status_color = "orange"
+            else:
+                usuario.status_color = "red"
+        else:
+            usuario.status_color = "red"
+    
     return render(request, "usuarios/gerenciamento_usuarios.html", {"usuarios": usuarios})
-
 @login_required
 def cadastrar_usuario(request):
     # Apenas Admin pode criar usuários
@@ -65,6 +81,18 @@ def cadastrar_usuario(request):
 
 @login_required
 def editar_usuario(request, pk):
+    if request.user.role != "admin":
+        raise PermissionDenied("Você não tem permissão para editar usuários.")
+    usuario = get_object_or_404(CustomUser, pk=pk)
+    if request.method == "POST":
+        form = CustomUserEditForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuário atualizado com sucesso!")
+            return redirect("usuarios:gerenciamento_usuarios")
+    else:
+        form = CustomUserEditForm(instance=usuario)
+    return render(request, "usuarios/cadastro_usuario.html", {"form": form})
     # Apenas Admin pode editar usuários
     if request.user.role != "admin":
         raise PermissionDenied("Você não tem permissão para editar usuários.")
@@ -90,3 +118,42 @@ def excluir_usuario(request, pk):
         messages.success(request, "Usuário excluído com sucesso!")
         return redirect("usuarios:gerenciamento_usuarios")
     return render(request, "usuarios/confirmar_exclusao.html", {"usuario": usuario})
+
+
+@login_required
+def perfil_view(request):
+    return render(request, 'usuarios/perfil.html')
+
+
+@login_required
+def editar_perfil_view(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        bio = request.POST.get("bio")
+        user = request.user
+
+        if full_name:
+            # Divide em primeiro e último nome se houver espaço; senão, atribui somente o primeiro nome.
+            user.first_name, user.last_name = full_name.split(" ", 1) if " " in full_name else (full_name, "")
+        if email:
+            user.email = email
+        user.save()
+
+        # Atualiza os dados do perfil
+        profile = None
+        try:
+            profile = user.profile
+        except Profile.DoesNotExist:
+            profile = Profile.objects.create(user=user)
+
+        profile.bio = bio
+
+        # Se houver upload de arquivo, atualiza a imagem
+        if request.FILES.get("profile_image"):
+            profile.image = request.FILES.get("profile_image")
+        
+        profile.save()
+        return redirect("usuarios:perfil")
+    
+    return render(request, "usuarios/editar_perfil.html")

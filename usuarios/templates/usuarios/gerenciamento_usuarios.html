@@ -28,6 +28,7 @@
             <th>Email</th>
             <th>Tipo</th>
             <th>Restaurante</th>
+            <th>Status</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -42,6 +43,21 @@
                 {{ usuario.restaurante.nome_restaurante }}
               {% else %}
                 -
+              {% endif %}
+            </td>
+            <td>
+              <span class="status-dot" style="
+                background-color: {{ usuario.status_color }};
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                margin-right: 5px;
+              "></span>
+              {% if usuario.profile.last_seen %}
+                {{ usuario.profile.last_seen|date:"d/m/Y H:i" }}
+              {% else %}
+                Nunca
               {% endif %}
             </td>
             <td>

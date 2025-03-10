@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,15 +30,19 @@
       }
       a {
         color: var(--primary-color);
+        text-decoration: none;
       }
       a:hover {
         color: var(--primary-color);
+        text-decoration: underline;
       }
+      /* Wrapper que envolve sidebar e main content */
       .wrapper {
         display: flex;
         min-height: 100vh;
         transition: all 0.3s ease;
       }
+      /* Sidebar */
       .sidebar {
         background-color: var(--bg-secondary);
         color: var(--text-color);
@@ -86,10 +90,11 @@
       .sidebar.collapsed li a .link-text {
         opacity: 0;
       }
-      /* Seção de submenu */
+      /* Submenu na Sidebar */
       .sidebar ul.submenu {
         padding-left: 1rem;
       }
+      /* Main Content */
       .main-content {
         flex: 1;
         background-color: var(--bg-dark);
@@ -107,10 +112,87 @@
           margin-left: 0;
         }
       }
+      /* Navbar Superior */
+      .navbar-custom {
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid #444;
+      }
+      .navbar-custom .navbar-brand,
+      .navbar-custom .nav-link,
+      .navbar-custom .form-control {
+        color: var(--text-color);
+      }
+      .navbar-custom .form-control {
+        background-color: var(--bg-dark);
+        border: none;
+      }
+      .navbar-custom .form-control::placeholder {
+        color: #6c757d;
+      }
+      .navbar-custom .dropdown-menu {
+        background-color: var(--bg-secondary);
+        border: none;
+      }
+      .navbar-custom .dropdown-item {
+        color: var(--text-color);
+      }
+      .navbar-custom .dropdown-item:hover {
+        background-color: var(--hover-bg-color);
+      }
     </style>
     {% block extra_css %}{% endblock %}
   </head>
   <body>
+    <!-- Navbar Superior -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'usuarios:dashboard' %}">FichaPro</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <!-- Campo de Busca -->
+          <form class="d-flex me-auto" role="search" method="GET" action="{% url 'search_results' %}">
+            <input class="form-control me-2" type="search" placeholder="Buscar..." aria-label="Search" name="q">
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+          </form>
+          <!-- Menu de Usuário -->
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            {% if request.user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" 
+                  aria-expanded="false">
+                  {% if request.user.profile.image %}
+                    <img src="{{ request.user.profile.image.url }}" alt="{{ request.user.username }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; margin-right:5px;">
+                  {% else %}
+                    <i class="fas fa-user"></i>
+                  {% endif %}
+                  {{ request.user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">Perfil</a></li>
+                  <li><a class="dropdown-item" href="{% url 'usuarios:alterar_senha' %}">Alterar Senha</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form action="{% url 'usuarios:logout' %}" method="post" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="dropdown-item" style="border: none; background: none; padding: 0; margin: 0;">Sair</button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Entrar</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Wrapper com Sidebar e Conteúdo Principal -->
     <div class="wrapper">
       <!-- Sidebar -->
       <nav id="sidebarMenu" class="sidebar">
@@ -156,7 +238,16 @@
               </a>
             {% endif %}
           </li>
-          <!-- Usuários (exibido somente para Admin) -->
+          <!-- Novo item: Insumos para usuários Master -->
+          {% if request.user.is_authenticated and request.user.role == "master" %}
+            <li>
+              <a href="{% url 'insumos:lista_insumos' %}">
+                <i class="fas fa-boxes"></i>
+                <span class="link-text">INSUMOS</span>
+              </a>
+            </li>
+          {% endif %}
+          <!-- Usuários (somente para Admin) -->
           {% if request.user.is_authenticated and request.user.role == "admin" %}
           <li>
             <a data-bs-toggle="collapse" href="#menuUsuarios" role="button" aria-expanded="false" aria-controls="menuUsuarios">
@@ -181,16 +272,18 @@
             </div>
           </li>
           {% endif %}
-          <!-- Outros itens, se necessário -->
+          <!-- Outros itens podem ser adicionados aqui -->
         </ul>
       </nav>
+
       <!-- Main Content -->
       <div class="main-content">
         {% block content %}
-        <!-- Conteúdo específico da página -->
+        <!-- Conteúdo específico de cada página será renderizado aqui -->
         {% endblock %}
       </div>
     </div>
+
     <!-- JavaScript para Toggle da Sidebar com Persistência -->
     <script>
       document.addEventListener("DOMContentLoaded", function() {

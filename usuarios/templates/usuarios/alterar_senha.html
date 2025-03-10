@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Alterar Senha{% endblock %}
+
+{% block content %}
+<style>
+  /* Estilos para o medidor de força da senha */
+  .password-meter {
+      height: 8px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      margin-top: 5px;
+      overflow: hidden;
+  }
+  .password-meter-bar {
+      height: 100%;
+      width: 0;
+      transition: width 0.5s ease-in-out;
+  }
+  .password-meter-weak {
+      background-color: #dc3545; /* vermelho */
+  }
+  .password-meter-medium {
+      background-color: #ffc107; /* amarelo */
+  }
+  .password-meter-strong {
+      background-color: #28a745; /* verde */
+  }
+  .password-feedback {
+      font-size: 0.9em;
+      margin-top: 5px;
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 class="mb-4 text-center">Alterar Senha</h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="id_old_password" class="form-label">Senha Atual</label>
+          {{ form.old_password|add_class:"form-control"|attr:"placeholder:Digite sua senha atual" }}
+        </div>
+        <div class="mb-3">
+          <label for="id_new_password1" class="form-label">Nova Senha</label>
+          {{ form.new_password1|add_class:"form-control"|attr:"placeholder:Digite a nova senha"|attr:"id:id_new_password1" }}
+          <div class="password-meter">
+            <div id="password-meter-bar" class="password-meter-bar"></div>
+          </div>
+          <div id="password-feedback" class="password-feedback"></div>
+        </div>
+        <div class="mb-3">
+          <label for="id_new_password2" class="form-label">Confirmação da Nova Senha</label>
+          {{ form.new_password2|add_class:"form-control"|attr:"placeholder:Repita a nova senha" }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Salvar</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Função para avaliar a força da senha
+  function evaluatePasswordStrength(password) {
+      let strength = 0;
+      // Critérios: comprimento mínimo, letras minúsculas, maiúsculas, dígitos e símbolos
+      if (password.length >= 8) strength += 1;
+      if (/[a-z]/.test(password)) strength += 1;
+      if (/[A-Z]/.test(password)) strength += 1;
+      if (/\d/.test(password)) strength += 1;
+      if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+      return strength;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      const newPasswordInput = document.getElementById('id_new_password1');
+      const meterBar = document.getElementById('password-meter-bar');
+      const feedback = document.getElementById('password-feedback');
+
+      newPasswordInput.addEventListener('input', function() {
+          const password = newPasswordInput.value;
+          const strength = evaluatePasswordStrength(password);
+          const strengthPercent = (strength / 5) * 100;
+          meterBar.style.width = strengthPercent + '%';
+
+          // Remove classes anteriores
+          meterBar.classList.remove('password-meter-weak', 'password-meter-medium', 'password-meter-strong');
+
+          if (password === "") {
+              feedback.textContent = "";
+          } else if (strength <= 2) {
+              meterBar.classList.add('password-meter-weak');
+              feedback.textContent = 'Senha Fraca';
+          } else if (strength === 3 || strength === 4) {
+              meterBar.classList.add('password-meter-medium');
+              feedback.textContent = 'Senha Média';
+          } else if (strength >= 5) {
+              meterBar.classList.add('password-meter-strong');
+              feedback.textContent = 'Senha Forte';
+          }
+      });
+  });
+</script>
+{% endblock %}

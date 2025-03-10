@@ -10,9 +10,7 @@ urlpatterns = [
     path('fichas_tecnicas/', include('fichas_tecnicas.urls')),
     path('usuarios/', include('usuarios.urls')),
     path('', include('core.urls')),
-   
     path('restaurante/', include('restaurante.urls')),
-    
 ]
 
 if settings.DEBUG:

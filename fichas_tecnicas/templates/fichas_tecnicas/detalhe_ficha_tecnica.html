@@ -111,11 +111,17 @@
         <span>CUSTO TOTAL RECEITAS (R$):</span> {{ ficha.custo_total_receitas|floatformat:2 }}
       </div>
       <div class="section-title">VALOR TRABALHADO (R$)</div>
-      <form method="post" action="{% url 'fichas_tecnicas:atualizar_valor_trabalhado' ficha.id %}" class="valor-form">
-        {% csrf_token %}
-        <input type="text" name="valor_trabalhado" value="{{ ficha.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
-        <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
-      </form>
+      {% if request.user.role == "admin" %}
+        <form method="post" action="{% url 'fichas_tecnicas:atualizar_valor_trabalhado' ficha.id %}" class="valor-form">
+          {% csrf_token %}
+          <input type="text" name="valor_trabalhado" value="{{ ficha.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
+          <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
+        </form>
+      {% else %}
+        <p class="data-item">
+          <span>VALOR TRABALHADO (R$):</span> {{ ficha.valor_trabalhado|default:"NÃO INFORMADO" }}
+        </p>
+      {% endif %}
       <div class="section-title">VALORES DE VENDA</div>
       <div id="sale-prices"></div>
       
@@ -126,21 +132,11 @@
             <a href="{% url 'insumos:detalhe_insumo' item.insumo.id %}" class="link-back">
               {{ item.insumo.nome|upper }}
             </a>:
-            {% comment %}
-              Exibe a quantidade na unidade informada.
-              Se o insumo está cadastrado como KG e o usuário usou valores em gramas (calc_unit == "g"),
-              exibe a quantidade seguida de "G". Caso contrário, exibe a unidade cadastrada.
-            {% endcomment %}
             {% if item.insumo.unidade_medida|lower == 'kg' and calc_unit == 'g' %}
               {{ item.quantidade_utilizada|floatformat:2 }} G
             {% else %}
               {{ item.quantidade_utilizada|floatformat:2 }} {{ item.insumo.unidade_medida|upper }}
             {% endif %}
-            {% comment %}
-              Para o custo: se o insumo está cadastrado como KG e calc_unit é "g", 
-              o valor armazenado pode estar 1000 vezes maior que o custo correto. 
-              Usamos {% widthratio %} para dividir por 1000 antes de exibir.
-            {% endcomment %}
             {% if item.insumo.unidade_medida|lower == 'kg' and calc_unit == 'g' %}
               {% widthratio item.custo_utilizado 1000 1 as adjusted_cost %}
               (CUSTO: R$ {{ adjusted_cost|floatformat:2 }})
@@ -188,7 +184,7 @@
     </div>
   </div>
   {% else %}
-  <!-- Exibição para usuários "standard": apenas INSUMOS, RECEITAS e MODO DE PREPARO -->
+  <!-- Exibição para usuários "standard" e "master": apenas INSUMOS, RECEITAS e MODO DE PREPARO -->
   <div class="card">
     <div class="card-header">
       <i class="fas fa-file-alt"></i> {{ ficha.nome_prato|upper }}
@@ -258,7 +254,7 @@
 {% if show_prices %}
 {% block extra_js %}
 <script>
-  // Atualiza os valores de venda via AJAX (executado somente para Admin e Master)
+  // Função para atualizar os valores de venda via AJAX (executado somente para Admin e Master)
   function updateFichaData() {
     fetch("{% url 'fichas_tecnicas:api_detalhe_ficha' ficha.id %}")
       .then(response => response.json())
@@ -280,4 +276,5 @@
 </script>
 {% endblock %}
 {% endif %}
+
 {% endblock %}

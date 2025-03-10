@@ -5,15 +5,18 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="text-center mb-4">Cadastro de Usuário</h2>
+  <h2 class="text-center mb-4">{% if form.instance.pk %}Editar Usuário{% else %}Cadastro de Usuário{% endif %}</h2>
   <div class="card">
     <div class="card-header bg-primary text-white">
-      Preencha os dados para criar um novo usuário
+      {% if form.instance.pk %}
+        Preencha os dados para atualizar o usuário
+      {% else %}
+        Preencha os dados para criar um novo usuário
+      {% endif %}
     </div>
     <div class="card-body">
       <form method="post">
         {% csrf_token %}
-        <!-- Exibe os erros gerais -->
         {{ form.non_field_errors }}
         <div class="form-group">
           <label for="{{ form.username.id_for_label }}">Nome de Usuário</label>
@@ -36,16 +39,16 @@
           {{ form.restaurante.errors }}
         </div>
         <div class="form-group">
-          <label for="{{ form.password1.id_for_label }}">Senha</label>
+          <label for="{{ form.password1.id_for_label }}">Nova Senha</label>
           {{ form.password1|add_class:"form-control" }}
           {{ form.password1.errors }}
         </div>
         <div class="form-group">
-          <label for="{{ form.password2.id_for_label }}">Confirme a Senha</label>
+          <label for="{{ form.password2.id_for_label }}">Confirme a Nova Senha</label>
           {{ form.password2|add_class:"form-control" }}
           {{ form.password2.errors }}
         </div>
-        <button type="submit" class="btn btn-success">Cadastrar Usuário</button>
+        <button type="submit" class="btn btn-success">{% if form.instance.pk %}Atualizar Usuário{% else %}Cadastrar Usuário{% endif %}</button>
       </form>
     </div>
   </div>

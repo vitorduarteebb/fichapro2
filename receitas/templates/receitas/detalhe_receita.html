@@ -111,11 +111,17 @@
       
       {% if show_prices %}
       <div class="section-title">VALOR TRABALHADO (R$)</div>
+      {% if request.user.role == "admin" %}
       <form method="post" action="{% url 'receitas:atualizar_valor_trabalhado' receita.id %}" class="valor-form">
         {% csrf_token %}
         <input type="text" name="valor_trabalhado" value="{{ receita.valor_trabalhado|default:"" }}" class="form-control" style="max-width:200px;" />
         <button type="submit" class="btn btn-primary mt-2">ATUALIZAR</button>
       </form>
+      {% else %}
+      <p class="data-item">
+        <span>VALOR TRABALHADO (R$):</span> {{ receita.valor_trabalhado|default:"NÃO INFORMADO" }}
+      </p>
+      {% endif %}
       {% endif %}
       
       {% if show_prices %}
